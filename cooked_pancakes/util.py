@@ -5,9 +5,6 @@ def exit_with_error(message: str):
     FAILURE = 1
     print(message)
     exit(FAILURE)
-    
-def is_tuple(obj):
-    return True if type(obj) is tuple else False
 
 def print_pretty(matrix):
     pp = pprint.PrettyPrinter(depth=3)
@@ -17,3 +14,6 @@ def print_pretty(matrix):
     fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
     table = [fmt.format(*row) for row in s]
     print("\n".join(table))
+
+def is_type(obj, obj_type):
+    return True if type(obj) is obj_type else False

@@ -3,7 +3,7 @@ import copy
 from cooked_pancakes.team import Team
 from cooked_pancakes.foundations import *
 from cooked_pancakes.gametheory import solve_game
-from cooked_pancakes.util import exit_with_error
+from cooked_pancakes.util import exit_with_error, is_type
 
 UPPER = Rules.UPPER
 LOWER = Rules.LOWER
@@ -16,7 +16,6 @@ class Board:
     lower_tokens: list
 
     def __init__(self, team_upper: Team = None, team_lower: Team = None):
-
         if team_upper is not None and team_lower is not None:
             self.team_upper = copy.deepcopy(team_upper)
             self.team_lower = copy.deepcopy(team_lower)
@@ -39,10 +38,12 @@ class Board:
     def __str__(self):
         return str(self.team_upper) + "\n" + str(self.team_lower)
 
-
     def successor(self, actions: dict):
-        if (UPPER not in actions or LOWER not in actions):
-            exit_with_error("Error in Board.successor(): incorrect actions dictionary format.")
+        for team_name in Rules.VALID_TEAMS:
+            if team_name not in actions:
+                exit_with_error("Error in Team.generate_dangerous_hexes(): incorrect team_dict format.")
+            if not is_type(actions[team_name], Action):
+                exit_with_error("Error in Team.generate_dangerous_hexes(): incorrect team_dict format.")        
 
         for team_name in actions:
             team = self.team_dict[team_name]
@@ -155,6 +156,8 @@ class Board:
         scr_active_toks = len(team.active_tokens) * 10
 
         def calculate_killable_enemies_score(self, token: Token):
+            if not is_type(token, Token): 
+                exit_with_error("Error in Board.evaluate().calculate_killable...(): input is not a Token")
             score = 0
             killable_type = token.beats_what()
             killable_enemies = enemy_team.get_tokens_of_type(killable_type)
@@ -163,12 +166,20 @@ class Board:
             return score
 
         def calculate_dangerous_enemies_score(self, token: Token):
+            if not is_type(token, Token): 
+                exit_with_error("Error in Board.evaluate().calculate_killable...(): input is not a Token")
             score = 0
             dangerous_type = token.what_beats()
             dangerous_enemies = enemy_team.get_tokens_of_type(dangerous_type)
             for enemy in dangerous_enemies:
                 score += token.dist(other_token=enemy)
             return score
+
+
+        """
+        CALCULATE DISTANCE TO ONE KILLABLE ENEMY TOKEN ONLY
+        CALCULATE NUMBER OF ROCKS V OPP PAPERS, SCISSORS, ETC...
+        """
 
         scr_killable_enemies = 0
         for token in team.active_tokens:

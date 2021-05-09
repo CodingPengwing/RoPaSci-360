@@ -13,6 +13,8 @@ class Team:
     previous_moves: list
 
     def __init__(self, team_name: str):
+        if team_name not in Rules.VALID_TEAMS:
+            exit_with_error("Error in Team.__init__(): invalid team_name input.")
         self.team_name = team_name
         self.throws_remaining = Rules.MAX_THROWS
         self.active_tokens = []
@@ -20,10 +22,11 @@ class Team:
 
     def __str__(self):
         return "Team " + self.team_name + ", " + "throws_remaining: " + str(self.throws_remaining) + "\nActive tokens: " + str(self.active_tokens)
-
      
     def get_token_at(self, hex: Hex):
         """ Returns the first token found at specified hex for this team. """
+        if not is_type(hex, Hex):
+            exit_with_error("Error in Team.get_token_at(): hex input is not a Hex.")
         for token in self.active_tokens:
             if token.hex == hex:
                 return token
@@ -31,17 +34,23 @@ class Team:
 
     def get_tokens_at(self, hex: Hex):
         """ Returns all the tokens found at specified hex for this team. """
+        if not is_type(hex, Hex):
+            exit_with_error("Error in Team.get_tokens_at(): hex input is not a Hex.")
         return [token for token in self.active_tokens if token.hex == hex]
 
     def exists_token_at(self, hex: Hex):
         """Check if there exists a token at specified hex for this team."""
+        if not is_type(hex, Hex):
+            exit_with_error("Error in Team.exists_token_at(): hex input is not a Hex.")
         if self.get_token_at(hex):
             return True
         return False
 
-    def has_active_token(self, token_symbol: str):
+    def has_active_token(self, token_type: str):
+        if token_type not in Rules.VALID_SYMBOLS:
+            exit_with_error("Error in Team.has_active_token(): token_type invalid.")
         for token in self.active_tokens:
-            if token.symbol == token_symbol:
+            if token.symbol == token_type:
                 return True
         return False
         
@@ -75,6 +84,8 @@ class Team:
             return self.get_scissor_tokens()
 
     def get_num_dups(self, token_type: str):
+        if token_type not in Rules.VALID_SYMBOLS:
+            exit_with_error("Error in Team.get_num_dups(): token_type invalid.")
         return len(self.get_tokens_of_type(token_type))
 
     def decrease_throw(self):
@@ -95,9 +106,11 @@ class Team:
     
     def generate_dangerous_hexes(self, team_dict: dict):
         for team_name in Rules.VALID_TEAMS:
-            # print(team_dict)
             if team_name not in team_dict:
-                exit_with_error("Error in Team.generate_dangerous_hexes(): incorrect teams dictionary format.")
+                exit_with_error("Error in Team.generate_dangerous_hexes(): incorrect team_dict dictionary format.")
+            if not is_type(team_dict[team_name], Team):
+                exit_with_error("Error in Team.generate_dangerous_hexes(): incorrect team_dict dictionary format.")
+
         enemy = LOWER if self.team_name == UPPER else UPPER
         enemy_rocks = set([x.hex for x in team_dict[enemy].get_rock_tokens()])
         enemy_papers = set([x.hex for x in team_dict[enemy].get_paper_tokens()])
@@ -106,6 +119,15 @@ class Team:
         return dangerous_hexes
 
     def _move_actions(self, x: Hex, team_dict: dict):
+        for team_name in Rules.VALID_TEAMS:
+            if team_name not in team_dict:
+                exit_with_error("Error in Team._move_actions(): incorrect team_dict dictionary format.")
+            if not is_type(team_dict[team_name], Team):
+                exit_with_error("Error in Team._move_actions(): incorrect team_dict dictionary format.")
+        if not is_type(x, Hex):
+            exit_with_error("Error in Team._move_actions(): x input is not a Hex.")
+
+
         occupied_hexes = self.generate_occupied_hexes()
         dangerous_hexes = self.generate_dangerous_hexes(team_dict)
         token = self.get_token_at(x)
@@ -123,23 +145,33 @@ class Team:
                 for z in opposites_y:
                     actions.append(Action(action_type="SWING", from_hex = x, to_hex =z))
         # print(f'slides/swings: {len(actions)}')
+        # random.shuffle(actions)
         return actions
     
-    def generate_throw_zone(self, team_dict: dict, symbol: str):
+    def generate_throw_zone(self, team_dict: dict, token_type: str):
+        for team_name in Rules.VALID_TEAMS:
+            if team_name not in team_dict:
+                exit_with_error("Error in Team.generate_throw_zone(): incorrect team_dict dictionary format.")
+            if not is_type(team_dict[team_name], Team):
+                exit_with_error("Error in Team.generate_throw_zone(): incorrect team_dict dictionary format.")
+        if token_type not in Rules.VALID_SYMBOLS:
+            exit_with_error("Error in Team.generate_throw_zone(): invalid token_type.")
+
         throws = Rules.MAX_THROWS - self.throws_remaining
         sign = -1 if self.team_name == LOWER else 1
         dangerous_hexes = self.generate_dangerous_hexes(team_dict)
         radius_range = Rules.HEX_RADIUS - 1
         throw_zone = {Hex(r, q) for r, q in Map._SET_HEXES if (sign * r >= radius_range - throws and not self.exists_token_at(Hex(r, q)))}
-        throw_zone -= dangerous_hexes[symbol]
+        throw_zone -= dangerous_hexes[token_type]
         
         return throw_zone
     
     
     def _throw_actions(self, team_dict: dict):
         for team_name in Rules.VALID_TEAMS:
-            # print(team_dict)
             if team_name not in team_dict:
+                exit_with_error("Error in Team._throw_actions(): incorrect team_dict dictionary format.")
+            if not is_type(team_dict[team_name], Team):
                 exit_with_error("Error in Team._throw_actions(): incorrect team_dict dictionary format.")
 
         throw_actions = []
@@ -151,6 +183,7 @@ class Team:
                 for x in throw_zone:
                     throw_actions.append(Action(action_type = Action.THROW, token_symbol=_s, to_hex = x))
         # print(f'throws: {len(throw_actions)}')
+        # random.shuffle(throw_actions)
         return throw_actions
 
     
@@ -160,19 +193,26 @@ class Team:
         Generate all available actions.
         """
         for team_name in Rules.VALID_TEAMS:
-            # print(team_dict)
             if team_name not in team_dict:
-                exit_with_error("Error in Team.generate_dangerous_hexes(): incorrect teams dictionary format.")
+                exit_with_error("Error in Team.generate_actions(): incorrect team_dict dictionary format.")
+            if not is_type(team_dict[team_name], Team):
+                exit_with_error("Error in Team.generate_actions(): incorrect team_dict dictionary format.")
+
         occupied_hexes = self.generate_occupied_hexes()
         actions = []
-        
         for x in occupied_hexes:
             actions += self._move_actions(x, team_dict)
         actions += self._throw_actions(team_dict)
-
+        random.shuffle(actions)
         return actions
     
     def determine_closest_kill(self, team_dict: dict):
+        for team_name in Rules.VALID_TEAMS:
+            if team_name not in team_dict:
+                exit_with_error("Error in Team.determine_closest_kill(): incorrect team_dict dictionary format.")
+            if not is_type(team_dict[team_name], Team):
+                exit_with_error("Error in Team.determine_closest_kill(): incorrect team_dict dictionary format.")
+
         enemy_team = team_dict[UPPER] if self.team_name == LOWER else team_dict[LOWER]
         closest_pair = None
         min_dist = -1
@@ -190,6 +230,12 @@ class Team:
         return closest_pair, min_dist
 
     def determine_best_throw(self, team_dict: dict):
+        for team_name in Rules.VALID_TEAMS:
+            if team_name not in team_dict:
+                exit_with_error("Error in Team.determine_best_throw(): incorrect team_dict dictionary format.")
+            if not is_type(team_dict[team_name], Team):
+                exit_with_error("Error in Team.determine_best_throw(): incorrect team_dict dictionary format.")
+
         # Distance of throw zone hexes to enemy tokens
         # Choose minimal distance
         enemy_team = team_dict[UPPER] if self.team_name == LOWER else team_dict[LOWER]

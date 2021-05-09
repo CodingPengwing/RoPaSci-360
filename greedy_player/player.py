@@ -54,10 +54,10 @@ class Player:
         
         if closest_pair:
             path = astar_search(self.board, closest_pair[0], closest_pair[1], team)
-            print(closest_pair[0])
-            print(closest_pair[1])
-            print("path")
-            print(path)
+            # print(closest_pair[0])
+            # print(closest_pair[1])
+            # print("path")
+            # print(path)
             if path:
                 symbol = team.get_token_at(path[0]).symbol
                 move_type = SLIDE if Hex.dist(path[0], path[1]) == 1 else SWING

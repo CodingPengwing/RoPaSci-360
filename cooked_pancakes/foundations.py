@@ -1,4 +1,4 @@
-from cooked_pancakes.util import exit_with_error, is_tuple
+from cooked_pancakes.util import exit_with_error, is_type
 
 class Rules:
     MAX_STEPS = 9
@@ -43,6 +43,8 @@ class Hex:
         Determines whether the given coordinate (r,q) or given Hex is within the bounds of our 
         playing board. Inputting a Hex will override any other arguments given.
         """
+        if not (is_type(r, int) and is_type(q, int)):
+            exit_with_error("Error in Hex.is_in_boundary(): r or q is not int type.")
         if abs(r) >= cls.HEX_RADIUS or abs(q) >= cls.HEX_RADIUS or abs(r+q) >= cls.HEX_RADIUS:
             return False
         return True
@@ -50,7 +52,7 @@ class Hex:
     
     @classmethod
     def is_valid_coordinate(cls, coordinate: tuple):
-        if not coordinate: return False
+        if not is_type(coordinate, tuple): return False
         if len(coordinate) != 2: return False
         return Hex.is_in_boundary(coordinate[0], coordinate[1])
     
@@ -78,19 +80,27 @@ class Hex:
         """
         Hexagonal manhattan distance between two hex coordinates.
         """
+        if not (is_type(hex_1, Hex) and is_type(hex_2, Hex)):
+            exit_with_error("Error in Hex.dist(): invalid inputs.")
         delta_r = hex_1.r - hex_2.r
         delta_q = hex_1.q - hex_2.q
         return (abs(delta_r) + abs(delta_q) + abs(delta_r + delta_q)) // 2
 
-    def __add__(self, other):
+    def __add__(self, other_hex):
         # this special method is called when two Hex objects are added with +
-        return Hex(self.r + other.r, self.q + other.q)
+        if not is_type(other_hex, Hex):
+            exit_with_error("Error in Hex.__add__(): invalid inputs.")
+        return Hex(self.r + other_hex.r, self.q + other_hex.q)
     
-    def __eq__(self, other):
-        return self.r == other.r and self.q == other.q
+    def __eq__(self, other_hex):
+        if not is_type(other_hex, Hex):
+            exit_with_error("Error in Hex.__eq__(): invalid inputs.")
+        return self.r == other_hex.r and self.q == other_hex.q
     
-    def __ne__(self, other):
-        return self.r != other.r or self.q != other.q
+    def __ne__(self, other_hex):
+        if not is_type(other_hex, Hex):
+            exit_with_error("Error in Hex.__ne__(): invalid inputs.")
+        return self.r != other_hex.r or self.q != other_hex.q
 
     def __hash__(self):
         return hash((self.r, self.q))
@@ -130,8 +140,8 @@ class Token:
     WHAT_BEATS = {'r': 'p', 'p': 's', 's': 'r'}
 
     def __init__(self, hex: Hex, symbol: str):
-        if symbol not in Rules.VALID_SYMBOLS:
-            exit_with_error("Error in Token.__init__(): invalid token symbol.")
+        if not (is_type(hex, Hex) and symbol in Rules.VALID_SYMBOLS):
+            exit_with_error("Error in Token.__init__(): invalid inputs.")
         self.hex = hex
         self.symbol = symbol
     
@@ -142,6 +152,8 @@ class Token:
         return str(self.to_tuple())
 
     def move(self, new_hex: Hex):
+        if not (is_type(new_hex, Hex)):
+            exit_with_error("Error in Token.move(): invalid inputs.")
         self.hex = new_hex
 
     def is_paper(self):
@@ -161,13 +173,20 @@ class Token:
 
     def dist(self, other_hex: Hex = None, other_token = None):
         if other_hex != None:
+            if not is_type(other_hex, Hex):
+                exit_with_error("Error in Token.dist(): invalid other_hex input.")
             return Hex.dist(self.hex, other_hex)
         if other_token != None:
+            if not is_type(other_token, Token):
+                exit_with_error("Error in Token.dist(): invalid other_token input.")
             return Hex.dist(self.hex, other_token.hex)
         exit_with_error("Error in Token.dist(): no arguments were given.")
 
     def find_closest_token(self, tokens: list):
         if tokens is None: return None
+        for token in tokens:
+            if not is_type(token, Token):
+                exit_with_error("Error in Token.find_closest_token(): tokens list is invalid.")
         if len(tokens) == 0: return None
         closest = None
         min = -1
@@ -193,7 +212,7 @@ class Action:
     @staticmethod
     def check_valid_action_tuple(action_tuple: tuple):
         # check format of action_tuple
-        if not action_tuple: return False
+        if not is_type(action_tuple, tuple): return False
         if len(action_tuple) != 3: return False
         # check 1st argument
         if action_tuple[0] not in Rules.VALID_ACTIONS: return False
@@ -201,12 +220,12 @@ class Action:
         if action_tuple[0] == Action.THROW:
             if action_tuple[1] not in Rules.VALID_SYMBOLS: return False
         else:
-            if not (is_tuple(action_tuple[1])): return False
+            if not is_type(action_tuple[1], tuple): return False
             if not Hex.is_valid_coordinate(action_tuple[1]): return False
         #check 3rd argument
-        if not (is_tuple(action_tuple[2])): return False
+        if not is_type(action_tuple[2], tuple): return False
         if not Hex.is_valid_coordinate(action_tuple[2]): return False
-        return True
+        return True                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           
 
     def __init__(self, action_type: str = None, token_symbol: str = None, from_hex: Hex = None, to_hex: Hex = None, action_tuple: tuple = None):
 
@@ -214,18 +233,22 @@ class Action:
         # Otherwise continue
         if not action_tuple:
             if not action_type in Rules.VALID_ACTIONS:
-                exit_with_error("Error in Action.__init__(): invalid action_type.")
+                exit_with_error("Error in Action.__init__(): invalid action_type input.")
             # convert from_hex and to_hex into tuples inside of Hexes so that we could use check_valid_action_tuple() function
-            if from_hex: from_hex = from_hex.to_tuple()
-            if to_hex: to_hex = to_hex.to_tuple()
+            if from_hex: 
+                if not is_type(from_hex, Hex):
+                    exit_with_error("Error in Action.__init__(): invalid from_hex input.")
+                from_hex = from_hex.to_tuple()
+            if to_hex: 
+                if not is_type(to_hex, Hex):
+                    exit_with_error("Error in Action.__init__(): invalid to_hex input.")
+                to_hex = to_hex.to_tuple()
             # create the action_tuple so we can test its validity
             action_tuple = (action_type, token_symbol, to_hex) if (action_type == Action.THROW) else (action_type, from_hex, to_hex)
         
         # Here we have an action_tuple, we need to check that it's valid
         if not Action.check_valid_action_tuple(action_tuple):
-            print(action_tuple)
-            print("Error in Action.__init__(): invalid input arguments.")
-            exit(1)
+            exit_with_error("Error in Action.__init__(): invalid input arguments.")
         # Here our action_tuple is valid and is ready to be turned into an Action object
         self.action_type = action_tuple[0]
         self.to_hex = Hex(coordinate = action_tuple[2])
