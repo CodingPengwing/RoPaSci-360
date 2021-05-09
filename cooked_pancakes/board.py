@@ -36,10 +36,6 @@ class Board:
             exit_with_error("Error in Board.get_team(): team name undefined.")
         return self.team_dict[team_name]
     
-    def __str__(self):
-        print(self.team_upper)
-        print(self.team_lower, end='')
-        return ''
 
     def successor(self, actions: dict):
         for team_name in Rules.VALID_TEAMS:
@@ -132,90 +128,20 @@ class Board:
         score += (opp_total_active - opp_num_invincible)
         score -= opp_num_invincible
 
+        
+        """
+        CALCULATE DISTANCE TO ONE KILLABLE ENEMY TOKEN ONLY, NOT EVERY KILLABLE
+        CALCULATE NUMBER OF ROCKS V OPP PAPERS, SCISSORS, ETC...
+        EVERY PAIR OF FRIENDLY TOKENS NEXT TO EACH OTHER SHOULD GET BONUS SCORE
+        """
+
         '''
         IMPLEMENT THIS
         '''
-        # Difference between number of active opponent tokens versus throws left
+    # # Difference between number of active opponent tokens versus throws left
         score += (Rules.MAX_THROWS - opp_team.throws_remaining) - len(opp_team.active_tokens) 
 
         return score
-
-
-    # def evaluate(self, team: Team, action: Action):
-
-    #     score = 0
-    #     # Penalty for throw action
-    #     if action.is_throw():
-    #         # dup_count = team.get_num_dups(action.token_symbol)
-    #         # total_tokens = len(team.active_tokens)
-            
-    #         # If no defeatable pieces
-            
-    #         score -= (Rules.MAX_THROWS - team.throws_remaining)
-    #         # if total_tokens == 1:
-    #         #     '''WORK ON THIS'''
-    #         #     score += 1
-    #         # elif total_tokens != 0:
-    #         #     score -= ((Rules.MAX_THROWS - team.throws_remaining)/Rules.MAX_THROWS + (dup_count/total_tokens))
-
-    #     # Distances 
-
-    #     for token in team.active_tokens:
-    #         score += self.evaluate_token(token,team.team)
-
-    #     return score*100
-
-    # def evaluate(self, team: Team):
-    #     """IMPLEMENT PREVIOUS STATE COMPARISON"""
-    #     """
-    #     score = throws_rem + active_tokens + negative_distance_ to killable tokens + positive distance from dangerous tokens
-    #     throws_rem * 10
-    #     active_tokens * 10
-    #     """
-    #     team_name = team.team_name
-    #     enemy_team = [self.team_dict[i] for i in self.team_dict if i != team_name][0]
-    #     scr_throws_rem = team.throws_remaining * 10
-    #     scr_active_toks = len(team.active_tokens) * 10
-
-    #     def calculate_killable_enemies_score(self, token: Token):
-    #         if not is_type(token, Token): 
-    #             exit_with_error("Error in Board.evaluate().calculate_killable...(): input is not a Token")
-    #         score = 0
-    #         killable_type = token.beats_what()
-    #         killable_enemies = enemy_team.get_tokens_of_type(killable_type)
-    #         for enemy in killable_enemies:
-    #             score -= token.dist(other_token=enemy)
-    #         return score
-
-    #     def calculate_dangerous_enemies_score(self, token: Token):
-    #         if not is_type(token, Token): 
-    #             exit_with_error("Error in Board.evaluate().calculate_dangerous...(): input is not a Token")
-    #         score = 0
-    #         dangerous_type = token.what_beats()
-    #         dangerous_enemies = enemy_team.get_tokens_of_type(dangerous_type)
-    #         for enemy in dangerous_enemies:
-    #             score += token.dist(other_token=enemy)
-    #         return score
-
-
-    #     """
-    #     CALCULATE DISTANCE TO ONE KILLABLE ENEMY TOKEN ONLY, NOT EVERY KILLABLE
-    #     CALCULATE NUMBER OF ROCKS V OPP PAPERS, SCISSORS, ETC...
-    #     DISTANCE BETWEEN OUR PIECE AND DANGEROUS ENEMY PIECES SHOULDNT MATTER UNTIL THEY COME WITHIN A 3 DIAMETER
-    #     OUTSIDE OF THE 3 DIAMETER, KEEP OUR TOKENS AS CLOSE TO EACH OTHER AS POSSIBLE WHILE APPROACH ENEMIES
-    #     (MAYBE HAVE A DIAMETER THRESHOLD FOR ALLY TOKENS BEING FAR AWAY)
-        
-    #     """
-
-    #     scr_killable_enemies = 0
-    #     for token in team.active_tokens:
-    #         scr_killable_enemies += calculate_killable_enemies_score(self, token) * 1.5
-    #     scr_dangerous_enemies = 0
-    #     for token in team.active_tokens:
-    #         scr_dangerous_enemies += calculate_dangerous_enemies_score(self, token)
-
-    #     score = scr_throws_rem + scr_active_toks + scr_killable_enemies + scr_dangerous_enemies
-    #     return score
 
 
 
@@ -268,7 +194,7 @@ class Board:
 
 
         """PRUNE OUT ALL STRICTLY DOMINATED STRATEGIES IN THIS MATRIX FOR BOTH PLAYERS"""
-        """CHECK FOR """
+        """CHECK FOR WEAKLY DOMINATED STRATEGIES"""
 
         Z = {UPPER: Z_ups, LOWER: Z_lws}
         # print_pretty(Z)
@@ -279,3 +205,149 @@ class Board:
     # def find_nash_equilibrium(self):
 
     #     return nash_equilibrium
+
+    def print_board(self, board_dict, message="", compact=True, ansi=False, **kwargs):
+        """
+        For help with visualisation and debugging: output a board diagram with
+        any information you like (tokens, heuristic values, distances, etc.).
+        Arguments:
+        board_dict -- A dictionary with (r, q) tuples as keys (following axial
+            coordinate system from specification) and printable objects (e.g.
+            strings, numbers) as values.
+            This function will arrange these printable values on a hex grid
+            and output the result.
+            Note: At most the first 5 characters will be printed from the string
+            representation of each value.
+        message -- A printable object (e.g. string, number) that will be placed
+            above the board in the visualisation. Default is "" (no message).
+        ansi -- True if you want to use ANSI control codes to enrich the output.
+            Compatible with terminals supporting ANSI control codes. Default
+            False.
+        compact -- True if you want to use a compact board visualisation,
+            False to use a bigger one including axial coordinates along with
+            the printable information in each hex. Default True (small board).
+        
+        Any other keyword arguments are passed through to the print function.
+        Example:
+            >>> board_dict = {
+            ...     ( 0, 0): "hello",
+            ...     ( 0, 2): "world",
+            ...     ( 3,-2): "(p)",
+            ...     ( 2,-1): "(S)",
+            ...     (-4, 0): "(R)",
+            ... }
+            >>> print_board(board_dict, "message goes here", ansi=False)
+            # message goes here
+            #              .-'-._.-'-._.-'-._.-'-._.-'-.
+            #             |     |     |     |     |     |
+            #           .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+            #          |     |     | (p) |     |     |     |
+            #        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+            #       |     |     |     | (S) |     |     |     |
+            #     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+            #    |     |     |     |     |     |     |     |     |
+            #  .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+            # |     |     |     |     |hello|     |world|     |     |
+            # '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+            #    |     |     |     |     |     |     |     |     |
+            #    '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+            #       |     |     |     |     |     |     |     |
+            #       '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+            #          |     |     |     |     |     |     |
+            #          '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+            #             | (R) |     |     |     |     |
+            #             '-._.-'-._.-'-._.-'-._.-'-._.-'
+        """
+        if compact:
+            template = """# {00:}
+    #              .-'-._.-'-._.-'-._.-'-._.-'-.
+    #             |{57:}|{58:}|{59:}|{60:}|{61:}|
+    #           .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+    #          |{51:}|{52:}|{53:}|{54:}|{55:}|{56:}|
+    #        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+    #       |{44:}|{45:}|{46:}|{47:}|{48:}|{49:}|{50:}|
+    #     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+    #    |{36:}|{37:}|{38:}|{39:}|{40:}|{41:}|{42:}|{43:}|
+    #  .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+    # |{27:}|{28:}|{29:}|{30:}|{31:}|{32:}|{33:}|{34:}|{35:}|
+    # '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+    #    |{19:}|{20:}|{21:}|{22:}|{23:}|{24:}|{25:}|{26:}|
+    #    '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+    #       |{12:}|{13:}|{14:}|{15:}|{16:}|{17:}|{18:}|
+    #       '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+    #          |{06:}|{07:}|{08:}|{09:}|{10:}|{11:}|
+    #          '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+    #             |{01:}|{02:}|{03:}|{04:}|{05:}|
+    #             '-._.-'-._.-'-._.-'-._.-'-._.-'"""
+        else:
+            template = """# {00:}
+    #                  ,-' `-._,-' `-._,-' `-._,-' `-._,-' `-.
+    #                 | {57:} | {58:} | {59:} | {60:} | {61:} |
+    #                 |  4,-4 |  4,-3 |  4,-2 |  4,-1 |  4, 0 |
+    #              ,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-.
+    #             | {51:} | {52:} | {53:} | {54:} | {55:} | {56:} |
+    #             |  3,-4 |  3,-3 |  3,-2 |  3,-1 |  3, 0 |  3, 1 |
+    #          ,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-.
+    #         | {44:} | {45:} | {46:} | {47:} | {48:} | {49:} | {50:} |
+    #         |  2,-4 |  2,-3 |  2,-2 |  2,-1 |  2, 0 |  2, 1 |  2, 2 |
+    #      ,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-.
+    #     | {36:} | {37:} | {38:} | {39:} | {40:} | {41:} | {42:} | {43:} |
+    #     |  1,-4 |  1,-3 |  1,-2 |  1,-1 |  1, 0 |  1, 1 |  1, 2 |  1, 3 |
+    #  ,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-.
+    # | {27:} | {28:} | {29:} | {30:} | {31:} | {32:} | {33:} | {34:} | {35:} |
+    # |  0,-4 |  0,-3 |  0,-2 |  0,-1 |  0, 0 |  0, 1 |  0, 2 |  0, 3 |  0, 4 |
+    #  `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-'
+    #     | {19:} | {20:} | {21:} | {22:} | {23:} | {24:} | {25:} | {26:} |
+    #     | -1,-3 | -1,-2 | -1,-1 | -1, 0 | -1, 1 | -1, 2 | -1, 3 | -1, 4 |
+    #      `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-'
+    #         | {12:} | {13:} | {14:} | {15:} | {16:} | {17:} | {18:} |
+    #         | -2,-2 | -2,-1 | -2, 0 | -2, 1 | -2, 2 | -2, 3 | -2, 4 |
+    #          `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-'
+    #             | {06:} | {07:} | {08:} | {09:} | {10:} | {11:} |
+    #             | -3,-1 | -3, 0 | -3, 1 | -3, 2 | -3, 3 | -3, 4 |   key:
+    #              `-._,-' `-._,-' `-._,-' `-._,-' `-._,-' `-._,-'     ,-' `-.
+    #                 | {01:} | {02:} | {03:} | {04:} | {05:} |       | input |
+    #                 | -4, 0 | -4, 1 | -4, 2 | -4, 3 | -4, 4 |       |  r, q |
+    #                  `-._,-' `-._,-' `-._,-' `-._,-' `-._,-'         `-._,-'"""
+        # prepare the provided board contents as strings, formatted to size.
+        reach = Rules.HEX_RANGE
+        cells = []
+        for rq in [(r,q) for r in reach for q in reach if -r-q in reach]:
+            if rq in board_dict and board_dict[rq]:
+                cell = ""
+                for token in board_dict[rq]:
+                    cell = cell + str(token) + ','
+                cell = cell[:-1].center(5)
+                if ansi:
+                    # put contents in bold
+                    cell = f"\033[1m{cell}\033[0m"
+            else:
+                cell = "     " # 5 spaces will fill a cell
+            cells.append(cell)
+        # prepare the message, formatted across multiple lines
+        multiline_message = "\n# ".join(message.splitlines())
+        # fill in the template to create the board drawing, then print!
+        board = template.format(multiline_message, *cells)
+        print(board, **kwargs)
+
+
+
+    def __str__(self):
+        print(self.team_upper)
+        print(self.team_lower)
+
+        board_dict = {}
+        for team_name in self.team_dict:
+            team = self.team_dict[team_name]
+            if not team.active_tokens: continue
+            for token in team.active_tokens:
+                _s = token.symbol
+                if team_name == UPPER: _s = _s.upper()
+                position = token.hex.to_tuple()
+                if position in board_dict:
+                    board_dict[position].append(_s)
+                else:
+                    board_dict[position] = [_s]
+
+        self.print_board(board_dict, compact=True)
+        return ''

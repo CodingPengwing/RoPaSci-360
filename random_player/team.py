@@ -82,11 +82,13 @@ class Team:
     def first_move(self):
         s = [Token.ROCK, Token.PAPER, Token.SCISSOR]
         i = random.randint(0,2)
+        reach = max(Rules.HEX_RANGE)
+        throw_hex = Hex(reach,-(reach)/2)
         if self.team_name == UPPER:
-            return Action(action_type = Action.THROW, token_symbol = s[i], to_hex = Hex(4,-2))
+            return Action(action_type = Action.THROW, token_symbol = s[i], to_hex = throw_hex)
         if self.team_name == LOWER:
-            return Action(action_type = Action.THROW, token_symbol = s[i], to_hex = Hex(-4,2))
-
+            throw_hex.invert()
+            return Action(action_type = Action.THROW, token_symbol = s[i], to_hex = throw_hex)
 
     def generate_actions(self, team_dict: dict):
         """

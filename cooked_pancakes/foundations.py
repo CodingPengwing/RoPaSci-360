@@ -19,7 +19,7 @@ class Rules:
     VALID_ACTIONS = {THROW, SLIDE, SWING}
 
     HEX_RADIUS = 5
-    # range -4 to 4 because map includes (0,0)
+    # range -HEX_RADIUS+1 to HEX_RADIUS because map includes (0,0)
     HEX_RANGE = range(-HEX_RADIUS+1, HEX_RADIUS)
  
     
@@ -104,6 +104,10 @@ class Hex:
 
     def __hash__(self):
         return hash((self.r, self.q))
+
+    def invert(self):
+        self.r = -self.r
+        self.q = -self.q
     
     def adjacents(self):
         """
