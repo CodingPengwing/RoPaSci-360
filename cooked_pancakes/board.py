@@ -167,7 +167,7 @@ class Board:
 
         def calculate_dangerous_enemies_score(self, token: Token):
             if not is_type(token, Token): 
-                exit_with_error("Error in Board.evaluate().calculate_killable...(): input is not a Token")
+                exit_with_error("Error in Board.evaluate().calculate_dangerous...(): input is not a Token")
             score = 0
             dangerous_type = token.what_beats()
             dangerous_enemies = enemy_team.get_tokens_of_type(dangerous_type)
@@ -177,8 +177,12 @@ class Board:
 
 
         """
-        CALCULATE DISTANCE TO ONE KILLABLE ENEMY TOKEN ONLY
+        CALCULATE DISTANCE TO ONE KILLABLE ENEMY TOKEN ONLY, NOT EVERY KILLABLE
         CALCULATE NUMBER OF ROCKS V OPP PAPERS, SCISSORS, ETC...
+        DISTANCE BETWEEN OUR PIECE AND DANGEROUS ENEMY PIECES SHOULDNT MATTER UNTIL THEY COME WITHIN A 3 DIAMETER
+        OUTSIDE OF THE 3 DIAMETER, KEEP OUR TOKENS AS CLOSE TO EACH OTHER AS POSSIBLE WHILE APPROACH ENEMIES
+        (MAYBE HAVE A DIAMETER THRESHOLD FOR ALLY TOKENS BEING FAR AWAY)
+        
         """
 
         scr_killable_enemies = 0
@@ -194,65 +198,7 @@ class Board:
 
 
 
-    # def compute_utility_matrix(self, team: Team):
-    #     # generate all pairings of actions for the 2 players 
-    #     upper_actions = self.team_upper.generate_actions(self.team_dict)
-    #     lower_actions = self.team_lower.generate_actions(self.team_dict)
-    #     # actions = itertools.product(upper_actions, lower_actions)
-        
-    #     # for each pairing of actions, create a new "board" 
-    #     V = []
-    #     for i in range(len(upper_actions)):
-    #         V_i = []
-    #         for j in range(len(lower_actions)):
-    #             actions_pair = {UPPER: upper_actions[i], LOWER: lower_actions[j]}
-    #             new_board = Board(team_upper = self.team_upper, team_lower = self.team_lower)
-    #             new_board.successor(actions_pair)
-    #             V_i.append([new_board, actions_pair])
-    #         V.append(V_i)
-        
-    #     # Evaluate the board
-    #     Z_ups = []
-    #     Z_lws = []
-    #     Z = []
-    #     actions_matrix = []
-    #     for i in range(len(V)):
-    #         Z_ups_i = []
-    #         Z_lws_i = []
-    #         Z_i = []
-    #         A_i = []
-    #         for j in range(len(V[i])):
-    #             Z_ij = []
-    #             state = V[i][j][0]
-    #             actions_pair = V[i][j][1]
-    #             # team_upper_score = state.evaluate(state.team_upper, actions_pair[UPPER])
-    #             # team_lower_score = state.evaluate(state.team_lower, actions_pair[LOWER])
-    #             team_upper_score = state.evaluate(state.team_upper)
-    #             team_lower_score = state.evaluate(state.team_lower)
-    #             Z_ij = team_upper_score - team_lower_score if team.team == UPPER else team_lower_score - team_upper_score
-
-    #             Z_ups_i.append(team_upper_score)
-    #             Z_lws_i.append(team_lower_score)
-    #             Z_i.append(Z_ij)
-    #             A_i.append(actions_pair)
-
-    #         Z.append(Z_i)
-    #         Z_ups.append(Z_ups_i)
-    #         Z_lws.append(Z_lws_i)
-    #         actions_matrix.append(A_i)
-
-    #     print_pretty(Z)
-    #     # return dict{player: optimal_move}
-    #     # actions = itertools.product(self.team_upper.generate_actions(), self.team_lower.generate_actions())
-    #     # V[i][j] = Board(self.upper_tokens.copy(), self.lower_tokens.copy()).successor(actions)
-    #     return Z, actions_matrix
-
-
-
-
-
-
-    def find_nash_equilibrium(self):
+    def compute_utility_matrix(self, team: Team):
         # generate all pairings of actions for the 2 players 
         upper_actions = self.team_upper.generate_actions(self.team_dict)
         lower_actions = self.team_lower.generate_actions(self.team_dict)
@@ -263,47 +209,51 @@ class Board:
         for i in range(len(upper_actions)):
             V_i = []
             for j in range(len(lower_actions)):
-                actions_pair = {}
-                actions_pair[UPPER] = upper_actions[i]
-                actions_pair[LOWER] = lower_actions[j]
+                actions_pair = {UPPER: upper_actions[i], LOWER: lower_actions[j]}
                 new_board = Board(team_upper = self.team_upper, team_lower = self.team_lower)
                 new_board.successor(actions_pair)
-                V_i.append([new_board, actions_pair])
+                V_i.append((new_board, actions_pair))
             V.append(V_i)
         
         # Evaluate the board
         Z_ups = []
         Z_lws = []
-        Z = []
-        A = []
+        actions_matrix = []
         for i in range(len(V)):
             Z_ups_i = []
             Z_lws_i = []
-            Z_i = []
-            A_i =[]
+            # Z_i = []
+            A_i = []
             for j in range(len(V[i])):
-                Z_ij = []
+                # Z_ij = []
                 state = V[i][j][0]
                 actions_pair = V[i][j][1]
-                # team_upper_score = state.evaluate(state.team_upper, actions_pair[UPPER])
-                # team_lower_score = state.evaluate(state.team_lower, actions_pair[LOWER])
                 team_upper_score = state.evaluate(state.team_upper)
                 team_lower_score = state.evaluate(state.team_lower)
-                Z_ij = (team_upper_score, team_lower_score)
+
+                # Z_ij = (team_upper_score, team_lower_score)
+                # Z_ij = team_upper_score - team_lower_score if team.team == UPPER else team_lower_score - team_upper_score
 
                 Z_ups_i.append(team_upper_score)
                 Z_lws_i.append(team_lower_score)
-                Z_i.append(Z_ij)
+                # Z_i.append(Z_ij)
                 A_i.append(actions_pair)
 
-            Z.append(Z_i)
+            # Z.append(Z_i)
             Z_ups.append(Z_ups_i)
             Z_lws.append(Z_lws_i)
-            A.append(A_i)
+            actions_matrix.append(A_i)
 
+
+        """PRUNE OUT ALL STRICTLY DOMINATED STRATEGIES IN THIS MATRIX FOR BOTH PLAYERS"""
+        """CHECK FOR """
+
+        Z = {UPPER: Z_ups, LOWER: Z_lws}
         # print_pretty(Z)
+        return Z, actions_matrix
 
-        # return dict{player: optimal_move}
-        # actions = itertools.product(self.team_upper.generate_actions(), self.team_lower.generate_actions())
-        # V[i][j] = Board(self.upper_tokens.copy(), self.lower_tokens.copy()).successor(actions)
-        return Z_ups, Z_lws, A
+
+
+    def find_nash_equilibrium(self):
+
+        return nash_equilibrium

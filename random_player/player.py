@@ -52,3 +52,4 @@ class Player:
         opponent_action = Action(action_tuple = opponent_action)
         update_actions = {UPPER: player_action, LOWER: opponent_action} if (self.team_name == UPPER) else {LOWER: player_action, UPPER: opponent_action}        
         self.board.successor(update_actions)
+    
