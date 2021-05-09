@@ -9,8 +9,10 @@ class Team:
     throws_remaining: int
     active_tokens: list
 
-    # Hold the last 5 moves that we made
+    """----> Hold the last 5 moves that we made"""
     previous_moves: list
+
+    """----> Keep track of how many states have passed since we last moved each token."""
 
     def __init__(self, team_name: str):
         if team_name not in Rules.VALID_TEAMS:
@@ -205,6 +207,23 @@ class Team:
         actions += self._throw_actions(team_dict)
         random.shuffle(actions)
         return actions
+
+
+
+
+
+    def generate_good_actions():
+        """
+        Good actions include:
+        - Chasing a killable opponent
+        - Throwing on a killable opponent
+        - Running from a dangerous opponent
+        """
+        return good_actions
+
+
+
+
     
     def determine_closest_kill(self, team_dict: dict):
         for team_name in Rules.VALID_TEAMS:
@@ -263,3 +282,11 @@ class Team:
             throw_action = Action(action_type = Rules.THROW, token_symbol = best_throw_symbol, to_hex=best_throw)
         
         return throw_action, min_dist
+
+
+
+
+    def determine_closest_guardian_ally():
+        # Once you find this, 
+        return closest_guardian_ally
+
