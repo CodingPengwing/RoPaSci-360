@@ -1,4 +1,5 @@
 import itertools
+import math
 import copy
 from cooked_pancakes.team import Team
 from cooked_pancakes.foundations import *
@@ -36,7 +37,9 @@ class Board:
         return self.team_dict[team_name]
     
     def __str__(self):
-        return str(self.team_upper) + "\n" + str(self.team_lower)
+        print(self.team_upper)
+        print(self.team_lower, end='')
+        return ''
 
     def successor(self, actions: dict):
         for team_name in Rules.VALID_TEAMS:
@@ -83,42 +86,61 @@ class Board:
             exit_with_error("Error in Board.get_tokens(): invalid inputs.")
         return [token for token in self.team_dict[team_name].active_tokens if token.symbol == token_type]
 
-
-
     def evaluate_token(self, token: Token, team_name: str):
         score = 0
-        # d1 = 0
-        # # n beats_what tokens
-        # n = 0
+        WEIGHT = 1
 
-        # d2 = 0
-        # # m what_beats tokens
-        # m = 0
+        opp_team = self.team_upper if (team_name == LOWER) else self.team_lower
 
-        opp_tokens = self.lower_tokens if (team_name == UPPER) else self.upper_tokens
-
-        # for opp_token in opp_tokens:
-        #     if opp_token.symbol == token.beats_what():
-        #         # d1 += (1 - (Hex.dist(token.hex, opp_token.hex)/Rules.MAX_STEPS))
-        #         n += 1
-        #     elif token.symbol == token.what_beats():
-        #         d2 += (1 - (Hex.dist(token.hex,opp_token.hex)/Rules.MAX_STEPS))
-        #         m += 1
+        closest_defeatable = token.find_closest_token(opp_team.get_tokens_of_type(token.beats_what()))
+        closest_defeated_by = token.find_closest_token(opp_team.get_tokens_of_type(token.what_beats()))
+         
+        if closest_defeatable:
+            assert(Hex.dist(token.hex, closest_defeatable.hex) > 0)
+            score -= math.log(Hex.dist(token.hex, closest_defeatable.hex))
         
-        # if n != 0:
-        #     score += (0.7/n)*d1
-        # if m != 0:
-        #     score -= (0.3/m)*d2
+        if closest_defeated_by:
+            assert(Hex.dist(token.hex, closest_defeated_by.hex) > 0)
+            score += WEIGHT * math.log(Hex.dist(token.hex, closest_defeated_by.hex))
 
-        for opp_token in opp_tokens:
-            if opp_token.symbol == token.beats_what():
-                score -= Hex.dist(token.hex, opp_token.hex)
-            # elif token.symbol == token.what_beats():
-            #     score -= Hex.dist(token.hex,opp_token.hex)
-            #     m += 1
         return score
 
-    
+
+    def evaluate(self, team:Team):
+        score = 0
+        opp_team = self.team_upper if (team.team_name == LOWER) else self.team_lower
+
+        for token in team.active_tokens:
+            score += self.evaluate_token(token, team.team_name)
+        
+        opp_total_active = len(opp_team.active_tokens)
+        opp_num_invincible = opp_total_active
+        for _s in Rules.VALID_SYMBOLS:
+            our_same = team.get_tokens_of_type(_s)
+            if len(our_same) == 0:
+                continue
+            
+            opp_defeatable = opp_team.get_tokens_of_type(Token.BEATS_WHAT[_s])
+            opp_defeated_by = opp_team.get_tokens_of_type(Token.WHAT_BEATS[_s])
+            score += 2 - len(our_same) + len(opp_defeatable) - len(opp_defeated_by)
+            opp_num_invincible -= len(opp_defeatable)
+        
+        # Throws
+        score += team.throws_remaining - opp_team.throws_remaining
+
+        # Total opponent defeatable v/s invincible
+        score += (opp_total_active - opp_num_invincible)
+        score -= opp_num_invincible
+
+        '''
+        IMPLEMENT THIS
+        '''
+        # Difference between number of active opponent tokens versus throws left
+        score += (Rules.MAX_THROWS - opp_team.throws_remaining) - len(opp_team.active_tokens) 
+
+        return score
+
+
     # def evaluate(self, team: Team, action: Action):
 
     #     score = 0
@@ -143,57 +165,57 @@ class Board:
 
     #     return score*100
 
-    def evaluate(self, team: Team):
-        """IMPLEMENT PREVIOUS STATE COMPARISON"""
-        """
-        score = throws_rem + active_tokens + negative_distance_ to killable tokens + positive distance from dangerous tokens
-        throws_rem * 10
-        active_tokens * 10
-        """
-        team_name = team.team_name
-        enemy_team = [self.team_dict[i] for i in self.team_dict if i != team_name][0]
-        scr_throws_rem = team.throws_remaining * 10
-        scr_active_toks = len(team.active_tokens) * 10
+    # def evaluate(self, team: Team):
+    #     """IMPLEMENT PREVIOUS STATE COMPARISON"""
+    #     """
+    #     score = throws_rem + active_tokens + negative_distance_ to killable tokens + positive distance from dangerous tokens
+    #     throws_rem * 10
+    #     active_tokens * 10
+    #     """
+    #     team_name = team.team_name
+    #     enemy_team = [self.team_dict[i] for i in self.team_dict if i != team_name][0]
+    #     scr_throws_rem = team.throws_remaining * 10
+    #     scr_active_toks = len(team.active_tokens) * 10
 
-        def calculate_killable_enemies_score(self, token: Token):
-            if not is_type(token, Token): 
-                exit_with_error("Error in Board.evaluate().calculate_killable...(): input is not a Token")
-            score = 0
-            killable_type = token.beats_what()
-            killable_enemies = enemy_team.get_tokens_of_type(killable_type)
-            for enemy in killable_enemies:
-                score -= token.dist(other_token=enemy)
-            return score
+    #     def calculate_killable_enemies_score(self, token: Token):
+    #         if not is_type(token, Token): 
+    #             exit_with_error("Error in Board.evaluate().calculate_killable...(): input is not a Token")
+    #         score = 0
+    #         killable_type = token.beats_what()
+    #         killable_enemies = enemy_team.get_tokens_of_type(killable_type)
+    #         for enemy in killable_enemies:
+    #             score -= token.dist(other_token=enemy)
+    #         return score
 
-        def calculate_dangerous_enemies_score(self, token: Token):
-            if not is_type(token, Token): 
-                exit_with_error("Error in Board.evaluate().calculate_dangerous...(): input is not a Token")
-            score = 0
-            dangerous_type = token.what_beats()
-            dangerous_enemies = enemy_team.get_tokens_of_type(dangerous_type)
-            for enemy in dangerous_enemies:
-                score += token.dist(other_token=enemy)
-            return score
+    #     def calculate_dangerous_enemies_score(self, token: Token):
+    #         if not is_type(token, Token): 
+    #             exit_with_error("Error in Board.evaluate().calculate_dangerous...(): input is not a Token")
+    #         score = 0
+    #         dangerous_type = token.what_beats()
+    #         dangerous_enemies = enemy_team.get_tokens_of_type(dangerous_type)
+    #         for enemy in dangerous_enemies:
+    #             score += token.dist(other_token=enemy)
+    #         return score
 
 
-        """
-        CALCULATE DISTANCE TO ONE KILLABLE ENEMY TOKEN ONLY, NOT EVERY KILLABLE
-        CALCULATE NUMBER OF ROCKS V OPP PAPERS, SCISSORS, ETC...
-        DISTANCE BETWEEN OUR PIECE AND DANGEROUS ENEMY PIECES SHOULDNT MATTER UNTIL THEY COME WITHIN A 3 DIAMETER
-        OUTSIDE OF THE 3 DIAMETER, KEEP OUR TOKENS AS CLOSE TO EACH OTHER AS POSSIBLE WHILE APPROACH ENEMIES
-        (MAYBE HAVE A DIAMETER THRESHOLD FOR ALLY TOKENS BEING FAR AWAY)
+    #     """
+    #     CALCULATE DISTANCE TO ONE KILLABLE ENEMY TOKEN ONLY, NOT EVERY KILLABLE
+    #     CALCULATE NUMBER OF ROCKS V OPP PAPERS, SCISSORS, ETC...
+    #     DISTANCE BETWEEN OUR PIECE AND DANGEROUS ENEMY PIECES SHOULDNT MATTER UNTIL THEY COME WITHIN A 3 DIAMETER
+    #     OUTSIDE OF THE 3 DIAMETER, KEEP OUR TOKENS AS CLOSE TO EACH OTHER AS POSSIBLE WHILE APPROACH ENEMIES
+    #     (MAYBE HAVE A DIAMETER THRESHOLD FOR ALLY TOKENS BEING FAR AWAY)
         
-        """
+    #     """
 
-        scr_killable_enemies = 0
-        for token in team.active_tokens:
-            scr_killable_enemies += calculate_killable_enemies_score(self, token) * 1.5
-        scr_dangerous_enemies = 0
-        for token in team.active_tokens:
-            scr_dangerous_enemies += calculate_dangerous_enemies_score(self, token)
+    #     scr_killable_enemies = 0
+    #     for token in team.active_tokens:
+    #         scr_killable_enemies += calculate_killable_enemies_score(self, token) * 1.5
+    #     scr_dangerous_enemies = 0
+    #     for token in team.active_tokens:
+    #         scr_dangerous_enemies += calculate_dangerous_enemies_score(self, token)
 
-        score = scr_throws_rem + scr_active_toks + scr_killable_enemies + scr_dangerous_enemies
-        return score
+    #     score = scr_throws_rem + scr_active_toks + scr_killable_enemies + scr_dangerous_enemies
+    #     return score
 
 
 
@@ -254,6 +276,6 @@ class Board:
 
 
 
-    def find_nash_equilibrium(self):
+    # def find_nash_equilibrium(self):
 
-        return nash_equilibrium
+    #     return nash_equilibrium

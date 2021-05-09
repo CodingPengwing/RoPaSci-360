@@ -57,7 +57,7 @@ def solve_game(V, maximiser=True, rowplayer=True):
     res = opt.linprog(
         np.ones(n),
         A_ub=-Vpos,
-        b_ub=-np.ones(m),
+        b_ub=-np.ones(m)
     )
     if res.status:
         raise OptimisationError(res.message) # TODO: propagate whole result

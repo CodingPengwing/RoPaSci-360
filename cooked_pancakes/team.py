@@ -23,7 +23,9 @@ class Team:
         self.previous_moves = []
 
     def __str__(self):
-        return "Team " + self.team_name + ", " + "throws_remaining: " + str(self.throws_remaining) + "\nActive tokens: " + str(self.active_tokens)
+        print("Team " + self.team_name + ", " + "throws_remaining: " + str(self.throws_remaining) + "\nActive tokens: ", end = '')
+        [print(str(token) + ", ", end='') for token in self.active_tokens]
+        return ''
      
     def get_token_at(self, hex: Hex):
         """ Returns the first token found at specified hex for this team. """
@@ -168,7 +170,9 @@ class Team:
         
         return throw_zone
     
-    
+    '''
+    Only generate like 3 throw actions one for each type
+    '''
     def _throw_actions(self, team_dict: dict):
         for team_name in Rules.VALID_TEAMS:
             if team_name not in team_dict:
@@ -212,19 +216,16 @@ class Team:
 
 
 
-    def generate_good_actions():
-        """
-        Good actions include:
-        - Chasing a killable opponent
-        - Throwing on a killable opponent
-        - Running from a dangerous opponent
-        """
-        return good_actions
+    # def generate_good_actions():
+    #     """
+    #     Good actions include:
+    #     - Chasing a killable opponent
+    #     - Throwing on a killable opponent
+    #     - Running from a dangerous opponent
+    #     """
+    #     return good_actions
 
 
-
-
-    
     def determine_closest_kill(self, team_dict: dict):
         for team_name in Rules.VALID_TEAMS:
             if team_name not in team_dict:
@@ -286,7 +287,7 @@ class Team:
 
 
 
-    def determine_closest_guardian_ally():
-        # Once you find this, 
-        return closest_guardian_ally
+    # def determine_closest_guardian_ally():
+    #     # Once you find this, 
+    #     return closest_guardian_ally
 

@@ -4,6 +4,7 @@ import numpy as np
 from cooked_pancakes.gametheory import solve_game
 from cooked_pancakes.board import Board
 from cooked_pancakes.foundations import Rules, Action
+from cooked_pancakes.strategy import lol_main
 
 UPPER = Rules.UPPER
 LOWER = Rules.LOWER
@@ -31,8 +32,9 @@ class Player:
         of the game, select an action to play this turn.
         """
         next_action: Action
+        team = self.board.team_dict[self.team_name]
         # Initial throw
-        if self.board.team_upper.throws_remaining == 9:
+        if team.throws_remaining == 9:
             next_action = self.board.get_team(self.team_name).first_move()
             return next_action.to_tuple()
 
@@ -59,32 +61,34 @@ class Player:
         # next_action = A[0][best_action][LOWER] if self.team_name == LOWER else A[best_action][i][UPPER]
 
 
+        return lol_main(self.board, team).to_tuple()
+
 
 
         # Not Initial throw idk do shit
 
         # find nash equilibrium using the current board state
         # the return value of find_nash_equilibrium() should be a dictionary that maps each team to its corresponding "optimal" action
-        Z_ups, Z_lws, A = self.board.find_nash_equilibrium()
+        # Z_ups, Z_lws, A = self.board.find_nash_equilibrium()
         
-        if Z_ups or Z_lws:
-            if self.team_name == UPPER: 
-                (s,v) = solve_game(Z_ups)
-                # next_action = A[v.index(max(v))][0]
-            else:
-                (s,v) = solve_game(Z_lws, True, False)
-                # next_action = A[v.index(max(v))][1]
+        # if Z_ups or Z_lws:
+        #     if self.team_name == UPPER: 
+        #         (s,v) = solve_game(Z_ups)
+        #         # next_action = A[v.index(max(v))][0]
+        #     else:
+        #         (s,v) = solve_game(Z_lws, True, False)
+        #         # next_action = A[v.index(max(v))][1]
             
-            if self.team_name == UPPER:
-                next_action = A[np.argmax(s)][0][self.team_name]
-            else:
-                next_action = A[0][np.argmax(s)][self.team_name]
-            # print(f'{self.team}: {next_action}')
-            # print(s)
-            # print("MAX")
-            # print(np.argmax(s))
-        else:
-            next_action = self.board.get_team(self.team_name).first_move()
+        #     if self.team_name == UPPER:
+        #         next_action = A[np.argmax(s)][0][self.team_name]
+        #     else:
+        #         next_action = A[0][np.argmax(s)][self.team_name]
+        #     # print(f'{self.team}: {next_action}')
+        #     # print(s)
+        #     # print("MAX")
+        #     # print(np.argmax(s))
+        # else:
+        #     next_action = self.board.get_team(self.team_name).first_move()
         # nash_equilibrium = s # huh?
         # nash_equilibrium = v
         
