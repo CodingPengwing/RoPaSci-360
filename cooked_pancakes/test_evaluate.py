@@ -7,10 +7,6 @@ import random
 UPPER = Rules.UPPER
 LOWER = Rules.LOWER
 
-
-
-
-
 num_tokens_upper = random.randint(0,5)
 
 upper_tokens = []

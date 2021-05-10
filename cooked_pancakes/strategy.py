@@ -4,7 +4,7 @@ from cooked_pancakes.team import Team
 from cooked_pancakes.foundations import Rules
 from cooked_pancakes.gametheory import solve_game
 
-CUTOFF = 3
+CUTOFF = 2
 UPPER = Rules.UPPER
 LOWER = Rules.LOWER
 

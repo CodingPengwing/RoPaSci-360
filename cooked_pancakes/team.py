@@ -173,24 +173,45 @@ class Team:
     '''
     Only generate like 3 throw actions one for each type
     '''
-    def _throw_actions(self, team_dict: dict):
-        for team_name in Rules.VALID_TEAMS:
-            if team_name not in team_dict:
-                exit_with_error("Error in Team._throw_actions(): incorrect team_dict dictionary format.")
-            if not is_type(team_dict[team_name], Team):
-                exit_with_error("Error in Team._throw_actions(): incorrect team_dict dictionary format.")
+    # def _throw_actions(self, team_dict: dict):
+    #     for team_name in Rules.VALID_TEAMS:
+    #         if team_name not in team_dict:
+    #             exit_with_error("Error in Team._throw_actions(): incorrect team_dict dictionary format.")
+    #         if not is_type(team_dict[team_name], Team):
+    #             exit_with_error("Error in Team._throw_actions(): incorrect team_dict dictionary format.")
 
-        throw_actions = []
-        if self.throws_remaining > 0:
-            # Only throw this type if we do NOT already have it on the board
-            throw_types = {symbol for symbol in Rules.VALID_SYMBOLS if not self.has_active_token(symbol)}
-            for _s in throw_types:
-                throw_zone = self.generate_throw_zone(team_dict, _s)
-                for x in throw_zone:
-                    throw_actions.append(Action(action_type = Action.THROW, token_symbol=_s, to_hex = x))
-        # print(f'throws: {len(throw_actions)}')
-        # random.shuffle(throw_actions)
-        return throw_actions
+    #     throw_actions = []
+    #     if self.throws_remaining > 0:
+    #         # Only throw this type if we do NOT already have it on the board
+    #         throw_types = {symbol for symbol in Rules.VALID_SYMBOLS if not self.has_active_token(symbol)}
+    #         for _s in throw_types:
+    #             throw_zone = self.generate_throw_zone(team_dict, _s)
+    #             for x in throw_zone:
+    #                 throw_actions.append(Action(action_type = Action.THROW, token_symbol=_s, to_hex = x))
+    #     # print(f'throws: {len(throw_actions)}')
+    #     # random.shuffle(throw_actions)
+    #     return throw_actions
+    def _throw_actions(self, team_dict: dict, token_symbol: str):
+        enemy_team = team_dict[UPPER] if self.team_name == LOWER else team_dict[LOWER]
+        best_throw = None
+        throw_action = None
+        min_dist = -1
+
+        if self.throws_remaining == 0:
+            return None
+        
+        throw_zone = self.generate_throw_zone(team_dict, token_symbol)
+        for throw in throw_zone:
+            killable_enemies = enemy_team.get_tokens_of_type(Token.BEATS_WHAT[token_symbol])
+            for enemy in killable_enemies:  
+                dist = Hex.dist(throw, enemy.hex)
+                if min_dist == -1 or dist < min_dist:
+                    min_dist = dist
+                    best_throw = throw
+        
+        if best_throw:
+            throw_action = Action(action_type = Rules.THROW, token_symbol = token_symbol, to_hex=best_throw)
+        return throw_action
 
     
     
@@ -208,8 +229,15 @@ class Team:
         actions = []
         for x in occupied_hexes:
             actions += self._move_actions(x, team_dict)
-        actions += self._throw_actions(team_dict)
-        random.shuffle(actions)
+        
+        # Best throw action for each token symbol
+        for _s in Rules.VALID_SYMBOLS:
+            throw_action = self._throw_actions(team_dict, _s)
+            if throw_action:
+                actions.append(throw_action)
+        
+        # actions += self._throw_actions(team_dict)
+        # random.shuffle(actions)
         return actions
 
 

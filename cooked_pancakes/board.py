@@ -88,7 +88,7 @@ class Board:
 
     def evaluate_token(self, token: Token, team_name: str):
         score = 0
-        WEIGHT = 1
+        WEIGHT = 1/2
 
         opp_team = self.team_upper if (team_name == LOWER) else self.team_lower
 
@@ -96,12 +96,15 @@ class Board:
         closest_defeated_by = token.find_closest_token(opp_team.get_tokens_of_type(token.what_beats()))
          
         if closest_defeatable:
-            assert(Hex.dist(token.hex, closest_defeatable.hex) > 0)
-            score -= math.log(Hex.dist(token.hex, closest_defeatable.hex))
+            assert(Hex.dist(token.hex, closest_defeatable.hex)+1 > 0)
+            score -= 2 * math.log(Hex.dist(token.hex, closest_defeatable.hex)+1)
         
         if closest_defeated_by:
-            assert(Hex.dist(token.hex, closest_defeated_by.hex) > 0)
-            score += WEIGHT * math.log(Hex.dist(token.hex, closest_defeated_by.hex))
+            # print(token.symbol)
+            # print(token.hex)
+            # print(closest_defeated_by.hex)
+            assert(Hex.dist(token.hex, closest_defeated_by.hex)+1 > 0)
+            score += WEIGHT * math.log(Hex.dist(token.hex, closest_defeated_by.hex)+1)
 
         return score
 
@@ -122,9 +125,12 @@ class Board:
             
             opp_defeatable = opp_team.get_tokens_of_type(Token.BEATS_WHAT[_s])
             opp_defeated_by = opp_team.get_tokens_of_type(Token.WHAT_BEATS[_s])
-            score += 2 - len(our_same) + len(opp_defeatable) - len(opp_defeated_by)
+            score += 1 - len(our_same) + len(opp_defeatable) - len(opp_defeated_by)
             opp_num_invincible -= len(opp_defeatable)
         
+
+        # score += team.throws_remaining
+        score -= len(team.active_tokens)
         # Throws
         score += team.throws_remaining - opp_team.throws_remaining
 
@@ -137,6 +143,7 @@ class Board:
         '''
         # Difference between number of active opponent tokens versus throws left
         score += (Rules.MAX_THROWS - opp_team.throws_remaining) - len(opp_team.active_tokens) 
+        # score -= (Rules.MAX_THROWS - team.throws_remaining) - len(team.active_tokens) 
 
         return score
 
