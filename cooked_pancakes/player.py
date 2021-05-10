@@ -3,8 +3,9 @@ import numpy as np
 
 from cooked_pancakes.gametheory import solve_game
 from cooked_pancakes.board import Board
-from cooked_pancakes.foundations import Rules, Action
-from cooked_pancakes.strategy import lol_main
+from cooked_pancakes.foundations import Rules, Action, Hex
+from cooked_pancakes.strategy import *
+from cooked_pancakes.util import is_type
 
 UPPER = Rules.UPPER
 LOWER = Rules.LOWER
@@ -33,73 +34,27 @@ class Player:
         """
         next_action: Action
         team = self.board.team_dict[self.team_name]
+
         # Initial throw
         if team.throws_remaining == 9:
+            # next_action = Action(action_type = "THROW", token_symbol= "r", to_hex=Hex(r=4,q=-2))
             next_action = self.board.get_team(self.team_name).first_move()
             return next_action.to_tuple()
 
-        # Z, A = self.board.compute_utility_matrix(self.board.get_team(self.team_name))
-        # max_score = None
-        # best_action = None
-        # if self.team_name == UPPER:
-        #     for i in range(len(Z)):
-        #         row_sum = sum(Z[i])
-        #         if max_score is None: max_score = row_sum
-        #         elif max_score < row_sum: 
-        #             max_score = row_sum
-        #             best_action = i
-        # else:
-        #     for j in range(len(Z[0])):
-        #         col_sum = 0
-        #         for i in range(len(Z)):
-        #             col_sum += Z[i][j]
-        #         if max_score is None: max_score = col_sum
-        #         elif max_score < col_sum: 
-        #             max_score = col_sum
-        #             best_action = j
+        # # If second throw
+        # if team.throws_remaining == 8:
+        #     next_action = Action(action_type = "THROW", token_symbol= "s", to_hex=Hex(r=3,q=-2))
+        #     return next_action.to_tuple()
 
-        # next_action = A[0][best_action][LOWER] if self.team_name == LOWER else A[best_action][i][UPPER]
-
-
-        return lol_main(self.board, team).to_tuple()
-
-
-
-        # Not Initial throw idk do shit
-
-        # find nash equilibrium using the current board state
-        # the return value of find_nash_equilibrium() should be a dictionary that maps each team to its corresponding "optimal" action
-        # Z_ups, Z_lws, A = self.board.find_nash_equilibrium()
-        
-        # if Z_ups or Z_lws:
-        #     if self.team_name == UPPER: 
-        #         (s,v) = solve_game(Z_ups)
-        #         # next_action = A[v.index(max(v))][0]
-        #     else:
-        #         (s,v) = solve_game(Z_lws, True, False)
-        #         # next_action = A[v.index(max(v))][1]
-            
-        #     if self.team_name == UPPER:
-        #         next_action = A[np.argmax(s)][0][self.team_name]
-        #     else:
-        #         next_action = A[0][np.argmax(s)][self.team_name]
-        #     # print(f'{self.team}: {next_action}')
-        #     # print(s)
-        #     # print("MAX")
-        #     # print(np.argmax(s))
-        # else:
-        #     next_action = self.board.get_team(self.team_name).first_move()
-        # nash_equilibrium = s # huh?
-        # nash_equilibrium = v
-        
-        # next_action = nash_equilibrium[self.team]
-
-
-
-        
-
-
+        # # If third throw
+        # if team.throws_remaining == 7:
+        #     next_action = Action(action_type = "THROW", token_symbol= "p", to_hex=Hex(r=2,q=-1))
+        #     return next_action.to_tuple()
+        next_action = improved_greedy(self.board, team)
+        if is_type(next_action, tuple): return next_action
         return next_action.to_tuple()
+        # return lol_main(self.board, team).to_tuple()
+
     
 
     def update(self, opponent_action, player_action):
@@ -115,3 +70,4 @@ class Player:
         opponent_action = Action(action_tuple = opponent_action)
         update_actions = {UPPER: player_action, LOWER: opponent_action} if (self.team_name == UPPER) else {LOWER: player_action, UPPER: opponent_action}        
         self.board.successor(update_actions)
+        # print(f'EVAL: {self.board.evaluate(self.board.team_dict[self.team_name])}')

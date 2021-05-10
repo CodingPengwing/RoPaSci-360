@@ -6,6 +6,7 @@ from cooked_pancakes.foundations import *
 from cooked_pancakes.gametheory import solve_game
 from cooked_pancakes.util import exit_with_error, is_type
 
+
 UPPER = Rules.UPPER
 LOWER = Rules.LOWER
 
@@ -18,8 +19,10 @@ class Board:
 
     def __init__(self, team_upper: Team = None, team_lower: Team = None):
         if team_upper is not None and team_lower is not None:
-            self.team_upper = copy.deepcopy(team_upper)
-            self.team_lower = copy.deepcopy(team_lower)
+            self.team_upper = Team(team_name = UPPER, active_tokens=team_upper.active_tokens, throws_remaining=team_upper.throws_remaining)
+            self.team_lower = Team(team_name = LOWER, active_tokens=team_lower.active_tokens, throws_remaining=team_lower.throws_remaining)
+            # self.team_upper = copy.deepcopy(team_upper)
+            # self.team_lower = copy.deepcopy(team_lower)
         else:
             if team_upper is not None or team_lower is not None:
                 exit_with_error("Error in Board.__init__(): one of the arguments (team_upper/team_lower) is None.")
@@ -53,6 +56,8 @@ class Board:
                 team.decrease_throw()
             else:
                 to_move = team.get_token_at(action.from_hex)
+                # print(action.from_hex)
+                # print(to_move)
                 to_move.move(action.to_hex)  
 
         # where tokens clash, do battle
@@ -84,7 +89,7 @@ class Board:
 
     def evaluate_token(self, token: Token, team_name: str):
         score = 0
-        WEIGHT = 1/2
+        WEIGHT = 1/4
 
         opp_team = self.team_upper if (team_name == LOWER) else self.team_lower
 
@@ -93,7 +98,7 @@ class Board:
          
         if closest_defeatable:
             assert(Hex.dist(token.hex, closest_defeatable.hex)+1 > 0)
-            score -= 2 * math.log(Hex.dist(token.hex, closest_defeatable.hex)+1)
+            score -= math.log(Hex.dist(token.hex, closest_defeatable.hex)+1)
         
         if closest_defeated_by:
             # print(token.symbol)
@@ -105,107 +110,127 @@ class Board:
         return score
 
 
-    def evaluate(self, team:Team):
+    def evaluate(self, team: Team):
         score = 0
         opp_team = self.team_upper if (team.team_name == LOWER) else self.team_lower
-
-        for token in team.active_tokens:
-            score += self.evaluate_token(token, team.team_name)
         
-        opp_total_active = len(opp_team.active_tokens)
-        opp_num_invincible = opp_total_active
-        for _s in Rules.VALID_SYMBOLS:
-            our_same = team.get_tokens_of_type(_s)
-            if len(our_same) == 0:
-                continue
-            
-            opp_defeatable = opp_team.get_tokens_of_type(Token.BEATS_WHAT[_s])
-            opp_defeated_by = opp_team.get_tokens_of_type(Token.WHAT_BEATS[_s])
-            score += 1 - len(our_same) + len(opp_defeatable) - len(opp_defeated_by)
-            opp_num_invincible -= len(opp_defeatable)
+        closest_kill, kill_dist = team.determine_closest_kill(self.team_dict)
+        closest_threat, threat_dist = team.determine_closest_threat(self.team_dict)
+
+        if kill_dist > 0:
+            score -= kill_dist
+        if threat_dist >0:
+            score += (1/2) * threat_dist
+
+        score += team.throws_remaining * 1
+        score += (Rules.MAX_THROWS - opp_team.throws_remaining) - len(opp_team.active_tokens)
+        score -= ((Rules.MAX_THROWS - team.throws_remaining) - len(team.active_tokens))
         
-
-        # score += team.throws_remaining
-        score -= len(team.active_tokens)
-        # Throws
-        score += team.throws_remaining - opp_team.throws_remaining
-
-        # Total opponent defeatable v/s invincible
-        score += (opp_total_active - opp_num_invincible)
-        score -= opp_num_invincible
-
-        
-        """
-        CALCULATE DISTANCE TO ONE KILLABLE ENEMY TOKEN ONLY, NOT EVERY KILLABLE
-        CALCULATE NUMBER OF ROCKS V OPP PAPERS, SCISSORS, ETC...
-        EVERY PAIR OF FRIENDLY TOKENS NEXT TO EACH OTHER SHOULD GET BONUS SCORE
-        """
-
-        '''
-        IMPLEMENT THIS
-        '''
-    # # Difference between number of active opponent tokens versus throws left
-        score += (Rules.MAX_THROWS - opp_team.throws_remaining) - len(opp_team.active_tokens) 
-        # score -= (Rules.MAX_THROWS - team.throws_remaining) - len(team.active_tokens) 
 
         return score
 
+    # def evaluate(self, team: Team):
+    #     score = 0
+    #     opp_team = self.team_upper if (team.team_name == LOWER) else self.team_lower
 
-
-
-    def compute_utility_matrix(self, team: Team):
-        # generate all pairings of actions for the 2 players 
-        upper_actions = self.team_upper.generate_actions(self.team_dict)
-        lower_actions = self.team_lower.generate_actions(self.team_dict)
-        # actions = itertools.product(upper_actions, lower_actions)
+    #     for token in team.active_tokens:
+    #         score += self.evaluate_token(token, team.team_name)
         
-        # for each pairing of actions, create a new "board" 
-        V = []
-        for i in range(len(upper_actions)):
-            V_i = []
-            for j in range(len(lower_actions)):
-                actions_pair = {UPPER: upper_actions[i], LOWER: lower_actions[j]}
-                new_board = Board(team_upper = self.team_upper, team_lower = self.team_lower)
-                new_board.successor(actions_pair)
-                V_i.append((new_board, actions_pair))
-            V.append(V_i)
+    #     opp_total_active = len(opp_team.active_tokens)
+    #     opp_num_invincible = opp_total_active
+    #     for _s in Rules.VALID_SYMBOLS:
+    #         our_same = team.get_tokens_of_type(_s)
+    #         if len(our_same) == 0:
+    #             continue
+            
+    #         opp_defeatable = opp_team.get_tokens_of_type(Token.BEATS_WHAT[_s])
+    #         opp_defeated_by = opp_team.get_tokens_of_type(Token.WHAT_BEATS[_s])
+    #         score += 2 - len(our_same) + len(opp_defeatable) - len(opp_defeated_by)
+    #         opp_num_invincible -= len(opp_defeatable)
         
-        # Evaluate the board
-        Z_ups = []
-        Z_lws = []
-        actions_matrix = []
-        for i in range(len(V)):
-            Z_ups_i = []
-            Z_lws_i = []
-            # Z_i = []
-            A_i = []
-            for j in range(len(V[i])):
-                # Z_ij = []
-                state = V[i][j][0]
-                actions_pair = V[i][j][1]
-                team_upper_score = state.evaluate(state.team_upper)
-                team_lower_score = state.evaluate(state.team_lower)
 
-                # Z_ij = (team_upper_score, team_lower_score)
-                # Z_ij = team_upper_score - team_lower_score if team.team == UPPER else team_lower_score - team_upper_score
+    #     # score += team.throws_remaining
+    #     # score -= len(team.active_tokens)
+    #     # Throws
+    #     # score += (team.throws_remaining - opp_team.throws_remaining) * 5
 
-                Z_ups_i.append(team_upper_score)
-                Z_lws_i.append(team_lower_score)
-                # Z_i.append(Z_ij)
-                A_i.append(actions_pair)
+    #     # Total opponent defeatable v/s invincible
+    #     # score += (opp_total_active - opp_num_invincible) * 5
+    #     score -= opp_num_invincible 
+    #     score += team.throws_remaining 
+    #     score += len(team.active_tokens) 
 
-            # Z.append(Z_i)
-            Z_ups.append(Z_ups_i)
-            Z_lws.append(Z_lws_i)
-            actions_matrix.append(A_i)
+    #     # score -= ((Rules.MAX_THROWS - team.throws_remaining) - len(team.active_tokens)) * 5
+
+        
+    #     """
+    #     CALCULATE DISTANCE TO ONE KILLABLE ENEMY TOKEN ONLY, NOT EVERY KILLABLE
+    #     CALCULATE NUMBER OF ROCKS V OPP PAPERS, SCISSORS, ETC...
+    #     EVERY PAIR OF FRIENDLY TOKENS NEXT TO EACH OTHER SHOULD GET BONUS SCORE
+    #     """
+
+    #     '''
+    #     IMPLEMENT THIS
+    #     '''
+    #     # Difference between number of active opponent tokens versus throws left
+    #     score += (Rules.MAX_THROWS - opp_team.throws_remaining) - len(opp_team.active_tokens) 
+    #     # score -= (Rules.MAX_THROWS - team.throws_remaining) - len(team.active_tokens) 
+
+    #     return score
+
+    # def compute_utility_matrix(self, team: Team):
+    #     # generate all pairings of actions for the 2 players 
+    #     upper_actions = self.team_upper.generate_actions(self.team_dict)
+    #     lower_actions = self.team_lower.generate_actions(self.team_dict)
+    #     # actions = itertools.product(upper_actions, lower_actions)
+        
+    #     # for each pairing of actions, create a new "board" 
+    #     V = []
+    #     for i in range(len(upper_actions)):
+    #         V_i = []
+    #         for j in range(len(lower_actions)):
+    #             actions_pair = {UPPER: upper_actions[i], LOWER: lower_actions[j]}
+    #             new_board = Board(team_upper = self.team_upper, team_lower = self.team_lower)
+    #             new_board.successor(actions_pair)
+    #             V_i.append((new_board, actions_pair))
+    #         V.append(V_i)
+        
+    #     # Evaluate the board
+    #     Z_ups = []
+    #     Z_lws = []
+    #     actions_matrix = []
+    #     for i in range(len(V)):
+    #         Z_ups_i = []
+    #         Z_lws_i = []
+    #         # Z_i = []
+    #         A_i = []
+    #         for j in range(len(V[i])):
+    #             # Z_ij = []
+    #             state = V[i][j][0]
+    #             actions_pair = V[i][j][1]
+    #             team_upper_score = state.evaluate(state.team_upper)
+    #             team_lower_score = state.evaluate(state.team_lower)
+
+    #             # Z_ij = (team_upper_score, team_lower_score)
+    #             # Z_ij = team_upper_score - team_lower_score if team.team == UPPER else team_lower_score - team_upper_score
+
+    #             Z_ups_i.append(team_upper_score)
+    #             Z_lws_i.append(team_lower_score)
+    #             # Z_i.append(Z_ij)
+    #             A_i.append(actions_pair)
+
+    #         # Z.append(Z_i)
+    #         Z_ups.append(Z_ups_i)
+    #         Z_lws.append(Z_lws_i)
+    #         actions_matrix.append(A_i)
 
 
-        """PRUNE OUT ALL STRICTLY DOMINATED STRATEGIES IN THIS MATRIX FOR BOTH PLAYERS"""
-        """CHECK FOR WEAKLY DOMINATED STRATEGIES"""
+    #     """PRUNE OUT ALL STRICTLY DOMINATED STRATEGIES IN THIS MATRIX FOR BOTH PLAYERS"""
+    #     """CHECK FOR WEAKLY DOMINATED STRATEGIES"""
 
-        Z = {UPPER: Z_ups, LOWER: Z_lws}
-        # print_pretty(Z)
-        return Z, actions_matrix
+    #     Z = {UPPER: Z_ups, LOWER: Z_lws}
+    #     # print_pretty(Z)
+    #     return Z, actions_matrix
 
 
 

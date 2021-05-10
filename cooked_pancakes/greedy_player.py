@@ -36,7 +36,6 @@ class Player:
         next_action: Action
         team = self.board.team_dict[self.team_name]
         team_dict = self.board.team_dict
-        enemy_team = self.board.team_upper if team.team_name == LOWER else self.board.team_lower
         
         # Initial throw
         if self.board.team_upper.throws_remaining == 9:
@@ -50,11 +49,11 @@ class Player:
         closest_pair, pair_dist_to_kill = team.determine_closest_kill(team_dict)
 
         # If can throw directly on top of opponent token, throw
-        if throw_action and enemy_team.get_token_at(throw_action.to_hex):
+        if throw_action and team.get_token_at(throw_action.to_hex):
             return throw_action.to_tuple()
         
         if closest_pair:
-            path = astar_search(team_dict= self.board.team_dict, team_name=self.team_name, start=closest_pair[0], end=closest_pair[1])
+            path = astar_search(self.board.team_dict, self.team_name, closest_pair[0], closest_pair[1])
             # print(closest_pair[0])
             # print(closest_pair[1])
             # print("path")

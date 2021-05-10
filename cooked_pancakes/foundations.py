@@ -43,6 +43,7 @@ class Hex:
         Determines whether the given coordinate (r,q) or given Hex is within the bounds of our 
         playing board. Inputting a Hex will override any other arguments given.
         """
+
         if not (is_type(r, int) and is_type(q, int)):
             exit_with_error("Error in Hex.is_in_boundary(): r or q is not int type.")
         if abs(r) >= cls.HEX_RADIUS or abs(q) >= cls.HEX_RADIUS or abs(r+q) >= cls.HEX_RADIUS:
@@ -64,6 +65,8 @@ class Hex:
             self.r = coordinate[0]
             self.q = coordinate[1]
         else:
+            r = int(r)
+            q = int(q)
             if not Hex.is_in_boundary(r, q):
                 exit_with_error("Error in Hex.__init__(): r or q out of boundaries.")
             self.r = r
@@ -91,6 +94,18 @@ class Hex:
         if not is_type(other_hex, Hex):
             exit_with_error("Error in Hex.__add__(): invalid inputs.")
         return Hex(self.r + other_hex.r, self.q + other_hex.q)
+
+    # def __sub__(self, other_hex):
+    #     # this special method is called when two Hex objects are added with +
+    #     if not is_type(other_hex, Hex):
+    #         exit_with_error("Error in Hex.__add__(): invalid inputs.")
+    #     new_r = self.r - other_hex.r
+    #     new_q = self.q - other_hex.q
+
+    #     if Hex.is_in_boundary(new_r, new_q):
+    #         return Hex(new_r, new_q)
+    #     else:
+    #         return None
     
     def __eq__(self, other_hex):
         if not is_type(other_hex, Hex):
@@ -106,8 +121,8 @@ class Hex:
         return hash((self.r, self.q))
 
     def invert(self):
-        self.r = -self.r
-        self.q = -self.q
+        self.r = 0 - self.r
+        self.q = 0 - self.q
     
     def adjacents(self):
         """
@@ -128,7 +143,6 @@ class Map:
 
     _ORD_HEXES = [(r, q) for r in Rules.HEX_RANGE for q in Rules.HEX_RANGE if -r - q in Rules.HEX_RANGE]
     _SET_HEXES = frozenset(_ORD_HEXES)
-
 
 
 class Token:
@@ -200,7 +214,7 @@ class Token:
                 min = dist  
                 closest = token     
         return closest
-
+        
 
 
 class Action:
@@ -217,10 +231,10 @@ class Action:
     def check_valid_action_tuple(action_tuple: tuple):
         # check format of action_tuple
         if not is_type(action_tuple, tuple): return False
-        if len(action_tuple) != 3: return False
+        if len(action_tuple) != 3: return False        
         # check 1st argument
         if action_tuple[0] not in Rules.VALID_ACTIONS: return False
-        #check 2nd argument
+        # check 2nd argument
         if action_tuple[0] == Action.THROW:
             if action_tuple[1] not in Rules.VALID_SYMBOLS: return False
         else:
@@ -243,16 +257,16 @@ class Action:
                 if not is_type(from_hex, Hex):
                     exit_with_error("Error in Action.__init__(): invalid from_hex input.")
                 from_hex = from_hex.to_tuple()
-            if to_hex: 
-                if not is_type(to_hex, Hex):
-                    exit_with_error("Error in Action.__init__(): invalid to_hex input.")
-                to_hex = to_hex.to_tuple()
+            if not is_type(to_hex, Hex):
+                exit_with_error("Error in Action.__init__(): invalid to_hex input.")
+            to_hex = to_hex.to_tuple()
             # create the action_tuple so we can test its validity
             action_tuple = (action_type, token_symbol, to_hex) if (action_type == Action.THROW) else (action_type, from_hex, to_hex)
         
         # Here we have an action_tuple, we need to check that it's valid
         if not Action.check_valid_action_tuple(action_tuple):
             exit_with_error("Error in Action.__init__(): invalid input arguments.")
+        
         # Here our action_tuple is valid and is ready to be turned into an Action object
         self.action_type = action_tuple[0]
         self.to_hex = Hex(coordinate = action_tuple[2])
@@ -260,6 +274,21 @@ class Action:
             self.token_symbol = action_tuple[1]
         else:
             self.from_hex = Hex(coordinate = action_tuple[1])
+
+
+
+    def __eq__(self, other_action):
+        if self.action_type != other_action.action_type:
+            return False
+        if self.action_type == Action.THROW:
+            if self.token_symbol != other_action.token_symbol:
+                return False
+        else:
+            if self.from_hex != other_action.from_hex:
+                return False
+        if self.to_hex != other_action.to_hex:
+            return False
+        return True
 
     def is_throw(self):
         return self.action_type == Action.THROW
@@ -278,3 +307,17 @@ class Action:
 
     def __str__(self):
         return str(self.to_tuple())
+
+    @staticmethod
+    def create_action_from_path(start: Hex, end: Hex):
+        move_type = Rules.SLIDE if (Hex.dist(start,end) == 1) else Rules.SWING
+        new_action = Action(action_type=move_type, from_hex=start, to_hex=end)
+        return new_action
+
+    @staticmethod
+    def find_overlap_actions(list_A: list, list_B: list):
+        overlap = []
+        for a in list_A:
+            if a in list_B:
+                overlap.append(a)
+        return overlap

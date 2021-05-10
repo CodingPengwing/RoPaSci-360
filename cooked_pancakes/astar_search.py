@@ -1,67 +1,123 @@
-from cooked_pancakes.pq import PriorityQueue
-from cooked_pancakes.foundations import *
-import math
 
-# # #
-# Search algorithm: AStar
-# 
+from cooked_pancakes.util import exit_with_error
+from cooked_pancakes.foundations import Token, Hex, Rules
 
-def astar_search(start, goal_test, heuristic, verbose=False):
+
+"""
+This file was created while referencing the following website:
+https://www.annytab.com/a-star-search-algorithm-in-python/
+"""
+
+class Node:
+
+    def __init__(self, position: Hex, parent: Hex):
+        self.position = position
+        self.parent = parent
+        self.g = 0  # Estimated distance from start node
+        self.h = 0  # Estimated distance to goal node 
+        self.f = 0  # g + h
+    
+    def __eq__(self, other):
+        return other.position == self.position
+
+    def __lt__(self, other):
+        return other.f > self.f
+    
+    def __repr__(self):
+        return ('({0},{1})'.format(self.position, self.f))
+
+def astar_search(team_dict: dict, team_name: str, start: Token, end: Token, blacklist: list = []):
     """
-    Run the A star search algorithm from a given start state with a given
-    goal test and heuristic.
-    `start` should be a state object with `actions_successors` method
-    which yields actions and successor states.
+    Performs A* search
     """
-    # keep track of distances and predecessor states/actions in these maps
-    dist = {start: 0}
-    back = {start: None}
-    # start with the start state and loop through states in priority order
-    queue = PriorityQueue([(start, heuristic(start))])
-    for state in queue:
-        if verbose: state.print(f"{dist[state]} {heuristic(state)}")
-        # if this is the goal, we are done: backtrack and return path
-        if goal_test(state):
-            actions = []
-            while back[state] is not None:
-                state, action = back[state]
-                actions.append(action)
-            return actions[::-1]
-        # otherwise, expand this node to continue the search
-        dist_new = dist[state] + 1
-        for (action, successor) in state.actions_successors():
-            if successor not in dist or dist[successor] > dist_new:
-                dist[successor] = dist_new
-                back[successor] = (state, action)
-                queue[successor] = dist_new + heuristic(successor)
-    # priority queue empty, there must be no solution
+    if team_name not in Rules.VALID_TEAMS:
+        exit_with_error("Error in astar_search(): invalid team_name format.")
+    for team in Rules.VALID_TEAMS:
+        if team not in team_dict:
+            exit_with_error("Error in astar_search(): incorrect team_dict dictionary format.")
+    
+    team = team_dict[team_name]
+    open = []
+    closed = []
+
+    start_node = Node(start.hex, None)
+    goal_node = Node(end.hex, None)
+
+    open.append(start_node)
+
+    while open:
+        # Sorting the open list so that the node with the lowest f value is first
+        open.sort()
+        
+        current_node = open.pop(0)
+        closed.append(current_node)
+        
+        # If goal has been reached, backtrack to find the path and return
+        if current_node == goal_node:
+            path = []
+            while current_node != start_node:
+                path.append(current_node.position)
+                current_node = current_node.parent
+            path.append(start.hex)
+            return path[::-1]
+
+        x = current_node.position
+        
+        # Finding actions of current node
+        neighbours = [a.to_hex for a in team._move_actions(x, team_dict)]
+
+        for neighbour in neighbours:
+            neighbour = Node(neighbour, current_node)
+
+            if neighbour in closed: continue
+            if neighbour.position in blacklist: continue
+
+            # Using euclidean distance to calculate heuristics
+            neighbour.g = Hex.dist(neighbour.position, start_node.position)
+            neighbour.h = Hex.dist(neighbour.position, goal_node.position)
+            # neighbour.g = distance.euclidean(neighbour.position, start_node.position)
+            # neighbour.h = distance.euclidean(neighbour.position, goal_node.position)
+            neighbour.f = neighbour.g + neighbour.h
+
+            if (add_to_open(open,neighbour) == True):
+                open.append(neighbour)
+
+    # No paths found
+    # print("why")
     return None
 
-# # #
-# Informing the search algorithm: Heuristic
-# A simple calculation determines the straight-line hexagonal distance 
-# of each lower token from the nearest upper token which will defeat it.
-# The sum of these distances is a simple (but not necessarily admissible)
-# heuristic drawing upper tokens towards lower tokens.
-# The heuristic is not admissible in at least two ways:
-# 1. Swing actions can reduce the effective distance between tokens, and
-# 2. Moving upper tokens can reduce two minimum distances at once if the
-#    lower tokens are in the same region of the board.
-# The heuristic could be improved in any or all of the following ways:
-# 1. Pre-computing real distances using an all-pairs-shortest-paths algorithm
-#    could make the distance calculations aware of the block tokens.
-# 2. Using a more sophisticated method of aggrgating the distances when there
-#    are multiple tokens of the one symbol (upper or lower) such as solving
-#    a small linear sum assignment problem and/or travelling salesman problem
-#    could make the heuristic more accurate in more complex cases.
-def heuristic(state):
-    distance = 0
-    for x, s in state.lower_tokens:
-        r = Token.WHAT_BEATS[s]
-        ys = [y for y, r_ in state.upper_tokens if r_ == r]
-        if ys:
-            distance += min(Hex.dist(x, y) for y in ys)
-        else:
-            distance += math.inf
-    return distance
+def add_to_open(open, neighbour):
+    """
+    Checks if a neighbour should be added to open list
+    """
+    for node in open:
+        if neighbour == node and neighbour.f >= node.f:
+            # Will not add if there already exists the same node in open that has lower f value
+            return False
+
+    return True
+
+
+"""---------> Might have to change 'end' to a Hex so it works with cutting in path"""
+def find_attack_moves_for_token(team_dict: dict, team_name: str, start: Token, end: Token):
+    moves = []
+    blacklist = []
+    # team = team_dict[team_name]
+    path = astar_search(team_dict, team_name, start, end)
+    if path:
+        current_path_len = len(path)
+    else:
+        # print("No path???")
+        # print(f'start: {start}')
+        # print(f'end: {end}')
+        return None
+
+    if len(path) >= 2:
+        while path:
+            if len(path) == current_path_len:
+                moves.append(path[1])
+                blacklist.append(path[1])
+                path = astar_search(team_dict, team_name, start, end, blacklist=blacklist)
+            else: break
+    return moves
 

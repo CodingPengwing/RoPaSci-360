@@ -1,0 +1,7 @@
+
+    """----> Hold the last 5 moves that we made"""
+    previous_moves: list
+
+    """----> Keep track of how many states have passed since we last moved each token."""
+
+    """ If we know their token is chasing one of our tokens, try to cut in its path"""

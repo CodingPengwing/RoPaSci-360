@@ -6,12 +6,10 @@ import random
 UPPER = Rules.UPPER
 LOWER = Rules.LOWER
 
-<<<<<<< HEAD:cooked_pancakes/test_evaluate.py
-=======
+# <<<<<<< HEAD:cooked_pancakes/test_evaluate.py
+# =======
 REACH = max(Rules.HEX_RANGE)
 
-
->>>>>>> ef711518da80465256215c17a89e2d75a5c49828:test_evaluate.py
 num_tokens_upper = random.randint(0,5)
 upper_positions = []
 for i in range(num_tokens_upper):
