@@ -13,9 +13,10 @@ upper_wins = int(lineList[0].split(',')[1])
 draws = int(lineList[1].split(',')[1])
 lower_wins = int(lineList[2].split(',')[1])
 
-if "upper" in result:
+print(result)
+if "* winner: upper" in result:
     upper_wins += 1
-elif "lower" in result:
+elif "* winner: lower" in result:
     lower_wins += 1
 elif "draw" in result:
     draws += 1

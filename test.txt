@@ -1,17 +1,8 @@
 #!/bin/bash
 
-echo "Cooked_pancakes v/s Greedy Player"
-
-declare -i upper_wins
-declare -i draws
-declare -i lower_wins
-set upper_wins = 0
-echo "$upper_wins"
-
-
 for i in `seq 1 50`; 
 do 
-python3 -m referee cooked_pancakes greedy_player > output.txt
+python3 -m referee greedy_player shit_pancakes > output.txt
 python3 ./test.py;
  
 done

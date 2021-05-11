@@ -347,11 +347,12 @@ class Team:
             closest_enemy = ally.find_closest_token(scary_dudes)
             if closest_enemy:
                 dist = Hex.dist(closest_enemy.hex, ally.hex)
+                """only take one pairing to reduce branching factor"""
                 if min_dist == -1 or dist < min_dist:
                     min_dist = dist
                     closest_pairings = [(ally,closest_enemy)]
-                elif dist == min_dist:
-                    closest_pairings.append((ally,closest_enemy))
+                # elif dist == min_dist:
+                #     closest_pairings.append((ally,closest_enemy))
 
         
         # Generate run moves from that closest dangerous enemy token
@@ -398,11 +399,12 @@ class Team:
             closest_enemy = ally.find_closest_token(defeatable)
             if closest_enemy:
                 dist = Hex.dist(closest_enemy.hex, ally.hex)
+                """only take one pairing to reduce branching factor"""
                 if min_dist == -1 or dist < min_dist:
                     min_dist = dist
                     closest_pairings = [(ally, closest_enemy)]
-                elif dist == min_dist:
-                    closest_pairings.append((ally,closest_enemy))
+                # elif dist == min_dist:
+                #     closest_pairings.append((ally,closest_enemy))
         
         # Generate attack moves to that closest killable enemy token
         actions = []
@@ -413,24 +415,8 @@ class Team:
                     for move in moves:
                         new_action = Action.create_action_from_path(ally.hex, move)
                         actions.append(new_action)
-        
+
         return actions
-
-
-        # actions = []
-        # for ally in self.active_tokens:
-        #     # Attack actions
-        #     if defeatable_tokens[ally.symbol]:
-        #         for enemy in defeatable_tokens[ally.symbol]:
-        #             moves = find_attack_moves_for_token(team_dict, self.team_name, ally, enemy)
-        #             if moves:
-        #                 for move in moves:
-        #                     new_action = Action.create_action_from_path(ally.hex, move)
-        #                     actions.append(new_action) 
-        # print("Actacckkk:")
-        # for action in actions: print(action, end=', ')
-        # print('\n')
-        # return actions
 
     def generate_throw_actions(self, team_dict: dict):
         actions = []
@@ -612,9 +598,4 @@ class Team:
         
         return throw_action, min_dist
 
-
-
-    # def determine_closest_guardian_ally():
-    #     # Once you find this, 
-    #     return closest_guardian_ally
 
