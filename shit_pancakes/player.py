@@ -59,9 +59,9 @@ class Player:
         next_action = lol_main(self.board, team)
         if next_action: return next_action.to_tuple()
         
-        if (self.total_time > 45):
-            print("===== Switched to greedy strategy =====")
-            return greedy_strategy(self.board, team)
+        # if (self.total_time > 45):
+        #     print("===== Switched to greedy strategy =====")
+        #     return greedy_strategy(self.board, team)
         
         next_action = game_theory(self.board, team).to_tuple()
         end_time = time.time()
