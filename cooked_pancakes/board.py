@@ -5,6 +5,7 @@ from cooked_pancakes.team import Team
 from cooked_pancakes.foundations import *
 from cooked_pancakes.gametheory import solve_game
 from cooked_pancakes.util import exit_with_error, is_type
+from cooked_pancakes.astar_search import find_path_length
 
 
 UPPER = Rules.UPPER
@@ -110,24 +111,99 @@ class Board:
         return score
 
 
+    # def evaluate(self, team: Team):
+    #     score = 0
+    #     opp_team = self.team_upper if (team.team_name == LOWER) else self.team_lower
+        
+    #     closest_kill, kill_dist = team.determine_closest_kill(self.team_dict)
+    #     closest_threat, threat_dist = team.determine_closest_threat(self.team_dict)
+
+    #     if kill_dist > 0:
+    #         score -= kill_dist
+    #     if threat_dist > 0:
+    #         score += (1/2) * threat_dist
+
+    #     score += team.throws_remaining * 1
+    #     score += (Rules.MAX_THROWS - opp_team.throws_remaining) - len(opp_team.active_tokens)
+    #     score -= ((Rules.MAX_THROWS - team.throws_remaining) - len(team.active_tokens))
+        
+    #     return score
+
+
     def evaluate(self, team: Team):
         score = 0
-        opp_team = self.team_upper if (team.team_name == LOWER) else self.team_lower
-        
-        closest_kill, kill_dist = team.determine_closest_kill(self.team_dict)
-        closest_threat, threat_dist = team.determine_closest_threat(self.team_dict)
+        enemy_team = self.team_upper if (team.team_name == LOWER) else self.team_lower
 
-        if kill_dist > 0:
-            score -= kill_dist
-        if threat_dist >0:
-            score += (1/2) * threat_dist
+        enemy_defeatable = team.generate_enemy_defeatable(self.team_dict)
+        enemy_defeated_by = team.generate_enemy_defeated_by(self.team_dict)
 
-        score += team.throws_remaining * 1
-        score += (Rules.MAX_THROWS - opp_team.throws_remaining) - len(opp_team.active_tokens)
-        score -= ((Rules.MAX_THROWS - team.throws_remaining) - len(team.active_tokens))
+        # score += team.throws_remaining * 1
+        # score += len(team.active_tokens)
+        if team.get_num_dups(Rules.ROCK):
+            score = score - team.get_num_dups(Rules.ROCK) + 1
+        if team.get_num_dups(Rules.PAPER):
+            score = score - team.get_num_dups(Rules.PAPER) + 1
+        if team.get_num_dups(Rules.SCISSOR):
+            score = score - team.get_num_dups(Rules.SCISSOR) + 1
+
+        weight_dist = {0: 1.22, 1: 1, 2: 0.80, 3: 0.62, 4: 0.46, 5: 0.32, 6: 0.20, 7: 0.10, 8: 0.02, 9: 0}
+        for token in team.active_tokens:
+            if enemy_defeatable[token.symbol]:
+                for enemy_token in enemy_defeatable[token.symbol]:
+                    path_length = find_path_length(self.team_dict, team.team_name, token, enemy_token)
+                    if path_length:
+                        dist_kill = path_length - 1
+                        if dist_kill < 10: weight = weight_dist[dist_kill]
+                        else: weight = 0
+                        score += ((9 - dist_kill) * weight)
+            if enemy_defeated_by[token.symbol]:
+                for enemy_token in enemy_defeated_by[token.symbol]:
+                    path_length = find_path_length(self.team_dict, team.team_name, token, enemy_token)
+                    if path_length:
+                        dist_threat = path_length - 1
+                        if dist_threat < 10: weight = weight_dist[dist_threat]
+                        else: weight = 0
+                        score += (dist_threat * weight)
+
+        enemy_active = len(enemy_team.active_tokens)
+        enemy_num_defeatable = sum([len(enemy_defeatable[_s]) for _s in Rules.VALID_SYMBOLS])
+        enemy_num_invincible = enemy_active - enemy_num_defeatable
         
+        score += (9 - enemy_num_invincible) * 5
+        """
+        score += throws_remaining * 1.1
+        score += tokens_active
+        if find_num_dups(R)
+            score -= find_num_dups(R) + 1
+        if find_num_dups(P)
+            score -= find_num_dups(P) + 1
+        if find_num_dups(S)
+            score -= find_num_dups(S) + 1
+
+        weight_dist = {1: 1, 2: 0.80, 3: 0.62, 4: 0.46, 5: 0.32, 6: 0.20, 7: 0.10, 8: 0.02, 9: 0}
+        if token_kills: (make find_token_kills)
+            score += (9 - dist_kill) * weight_dist[dist_kill]
+        if token_threats: (make find_token_threats)
+            score += (dist_threat) * weight_dist[dist_threat]
+            
+
+        RUN:
+        only run when opponent is within 3 steps
+        if there is an overlap in run and attack, take that
+        if there is no attack, find opponent token of the same type
+        if standing on opponent token of same type: safe, do not move unless there is a target to kill
+
+
+        CUT IN GREEDYS PATH: 
+        if already in path, move towards kill, else cut the way.
+        if next to target and haven't killed this target in 3 turns, try different method.
+        score 
+        """
 
         return score
+
+            
+
 
     # def evaluate(self, team: Team):
     #     score = 0

@@ -1,12 +1,13 @@
 import numpy as np
 import copy
+import random
 from cooked_pancakes.board import Board
 from cooked_pancakes.team import Team
 from cooked_pancakes.foundations import Rules, Hex, Action
 from cooked_pancakes.gametheory import solve_game
 from cooked_pancakes.astar_search import astar_search, find_attack_moves_for_token
 
-CUTOFF = 2
+CUTOFF = 1
 UPPER = Rules.UPPER
 LOWER = Rules.LOWER
 
@@ -197,9 +198,19 @@ def lol_main(curr_board: Board, team: Team):
 
     # Hence using we can work out our best move I think
     our_actions = team.generate_good_actions(curr_board.team_dict)
+    chance = random.uniform(0,1)
+    index = 0
+    cumulative_probability = 0
+    for i in range(len(s)):
+        prob = s[i]
+        if chance > cumulative_probability:
+            index = i
+            break
+        cumulative_probability += prob
 
-    next_action = our_actions[np.argmax(s)]
-
+    # next_action = our_actions[np.argmax(s)]
+    next_action = our_actions[index]
+    
     return next_action
 
 '''
@@ -209,14 +220,22 @@ def recursive_thingo(board: Board, team: Team, depth: int):
     enemy_team = board.team_upper if team.team_name == LOWER else board.team_lower
     
     if depth == CUTOFF:
-        # return (None, board.evaluate(team) - board.evaluate(enemy_team), None)
-        return (None, board.evaluate(team), None)
+        return (None, board.evaluate(team) - board.evaluate(enemy_team), None)
+        # return (None, board.evaluate(team), None)
     
     else:
         depth += 1
         # generate potential actions
         upper_actions = board.team_upper.generate_good_actions(board.team_dict)
         lower_actions = board.team_lower.generate_good_actions(board.team_dict)
+        if len(upper_actions) > 5:
+            print("LOWER")
+            [print(action, end=', ') for action in upper_actions]
+            print()
+        if len(lower_actions) > 5:
+            print("UPPER")
+            [print(action, end=', ') for action in lower_actions]
+            print()
         # print(f'upp: {upper_actions}')
         # print(f'low: {lower_actions}')
         
@@ -231,12 +250,15 @@ def recursive_thingo(board: Board, team: Team, depth: int):
                 
                 new_board = Board(team_upper = board.team_upper, team_lower = board.team_lower)
                 new_board.successor(actions)
-                e = new_board.evaluate(team)
-                # if e - board.evaluate(team) < -1:
-                if e < board.evaluate(team):
-                    v = e
-                else:
-                    (s, v, U) = recursive_thingo(new_board, team, depth)
+
+
+                """TEST THIS"""
+                # e = new_board.evaluate(team)
+                # if e > board.evaluate(team):
+                #     v = e
+
+                # else:
+                (s, v, U) = recursive_thingo(new_board, team, depth)
 
                 # print(new_board)
                 # print(eval)

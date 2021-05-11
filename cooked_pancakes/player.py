@@ -37,23 +37,30 @@ class Player:
 
         # Initial throw
         if team.throws_remaining == 9:
-            # next_action = Action(action_type = "THROW", token_symbol= "r", to_hex=Hex(r=4,q=-2))
-            next_action = self.board.get_team(self.team_name).first_move()
+            to_hex = Hex(r=4,q=-2)
+            if self.team_name == LOWER: to_hex.invert()
+            next_action = Action(action_type = "THROW", token_symbol= "r", to_hex=to_hex)
+            # next_action = self.board.get_team(self.team_name).first_move()
             return next_action.to_tuple()
 
         # # If second throw
         # if team.throws_remaining == 8:
-        #     next_action = Action(action_type = "THROW", token_symbol= "s", to_hex=Hex(r=3,q=-2))
+        #     to_hex = Hex(r=3,q=-2)
+        #     if self.team_name == LOWER: to_hex.invert()
+        #     next_action = Action(action_type = "THROW", token_symbol= "s", to_hex=to_hex)
         #     return next_action.to_tuple()
 
         # # If third throw
         # if team.throws_remaining == 7:
-        #     next_action = Action(action_type = "THROW", token_symbol= "p", to_hex=Hex(r=2,q=-1))
+        #     to_hex = Hex(r=2,q=-1)
+        #     if self.team_name == LOWER: to_hex.invert()
+        #     next_action = Action(action_type = "THROW", token_symbol= "p", to_hex=to_hex)
         #     return next_action.to_tuple()
-        next_action = improved_greedy(self.board, team)
-        if is_type(next_action, tuple): return next_action
-        return next_action.to_tuple()
-        # return lol_main(self.board, team).to_tuple()
+
+        # next_action = improved_greedy(self.board, team)
+        # if is_type(next_action, tuple): return next_action
+        # return next_action.to_tuple()
+        return lol_main(self.board, team).to_tuple()
 
     
 

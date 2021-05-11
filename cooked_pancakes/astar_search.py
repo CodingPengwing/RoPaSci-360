@@ -97,6 +97,10 @@ def add_to_open(open, neighbour):
 
     return True
 
+def find_path_length(team_dict: dict, team_name: str, start: Token, end: Token):
+    path = astar_search(team_dict, team_name, start, end)
+    return len(path) if path else None
+
 
 """---------> Might have to change 'end' to a Hex so it works with cutting in path"""
 def find_attack_moves_for_token(team_dict: dict, team_name: str, start: Token, end: Token):
@@ -105,19 +109,27 @@ def find_attack_moves_for_token(team_dict: dict, team_name: str, start: Token, e
     # team = team_dict[team_name]
     path = astar_search(team_dict, team_name, start, end)
     if path:
-        current_path_len = len(path)
+        optimal_path_len = len(path)
     else:
         # print("No path???")
         # print(f'start: {start}')
         # print(f'end: {end}')
         return None
 
-    if len(path) >= 2:
+    if len(path) == 2:
+        moves.append(path[1])
+        blacklist.append(path[1])
+        path = astar_search(team_dict, team_name, start, end, blacklist=blacklist)
+        if path:
+            moves.append(path[1])
+    elif len(path) > 2:
         while path:
-            if len(path) == current_path_len:
+            if len(path) == optimal_path_len:
                 moves.append(path[1])
                 blacklist.append(path[1])
                 path = astar_search(team_dict, team_name, start, end, blacklist=blacklist)
             else: break
     return moves
+
+"""INSTEAD OF FIND ATTACK MOVES JUST FIND MOVES IN GENERAL TOWARDS A HEX"""
 
