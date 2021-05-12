@@ -413,7 +413,7 @@ class Team:
                     for move in moves:
                         new_action = Action.create_action_from_path(ally.hex, move)
                         actions.append(new_action)
-        
+
         return actions
 
 
@@ -542,38 +542,37 @@ class Team:
                 exit_with_error("Error in Team.determine_closest_kill(): incorrect team_dict dictionary format.")
 
         enemy_team = team_dict[UPPER] if self.team_name == LOWER else team_dict[LOWER]
-        closest_pair = None
         min_dist = -1
+        closest_list = []
         
         for token in self.active_tokens:
             enemy_tokens = enemy_team.get_tokens_of_type(token.beats_what())
-            
-            enemy_token = token.find_closest_token(enemy_tokens)
-            if enemy_token:
+            # enemy_token = token.find_closest_token(enemy_tokens)
+            for enemy_token in enemy_tokens:
                 # dist = Hex.dist(token.hex, enemy_token.hex)
-                dist = token.dist(other_token = enemy_token)
-                if min_dist == -1 or dist < min_dist:
-                    min_dist = dist
-                    closest_pair = (token, enemy_token)
-    
-        return closest_pair, min_dist
+                path = astar_search(team_dict, self.team_name, token, enemy_token)
+                if path:
+                    dist = len(path) - 1
+                    if min_dist == -1 or dist < min_dist:
+                        min_dist = dist
+                        closest_list = [(token, enemy_token)]
+                    if dist == min_dist:
+                        closest_list.append((token, enemy_token))
+
+        best_pair = None
+        max_enemies = 0
+        for closest_pair in closest_list:
+            enemy_hex = closest_pair[1].hex
+            enemy_tokens = enemy_team.get_tokens_at(enemy_hex)
+            if len(enemy_tokens) > max_enemies:
+                max_enemies = len(enemy_tokens)
+                best_pair = closest_pair
+        
+        return best_pair, min_dist
 
     def determine_closest_threat(self, team_dict: dict):
-
         enemy_team = team_dict[UPPER] if self.team_name == LOWER else team_dict[LOWER]
-        closest_pair = None
-        min_dist = -1
-        
-        for token in enemy_team.active_tokens:
-            ally_tokens = self.get_tokens_of_type(token.beats_what())
-            
-            ally_token = token.find_closest_token(ally_tokens)
-            if ally_token:
-                dist = token.dist(other_token = ally_token)
-                if min_dist == -1 or dist < min_dist:
-                    min_dist = dist
-                    closest_pair = (ally_token, token)
-        return closest_pair, min_dist
+        return enemy_team.determine_closest_kill(team_dict)
 
     def determine_best_throw(self, team_dict: dict):
         for team_name in Rules.VALID_TEAMS:

@@ -7,7 +7,7 @@ from cooked_pancakes.foundations import Rules, Hex, Action, Token
 from cooked_pancakes.gametheory import solve_game
 from cooked_pancakes.astar_search import astar_search, find_attack_moves_for_token
 
-CUTOFF = 2
+CUTOFF = 1
 UPPER = Rules.UPPER
 LOWER = Rules.LOWER
 
@@ -97,8 +97,6 @@ def lol_main(board:Board, team:Team):
     enemy_team = board.team_upper if team.team_name == LOWER else board.team_lower
     team_dict = board.team_dict
 
-    (threat, threat_dist) = enemy_team.determine_closest_kill(team_dict)
-
     attack_actions = team.generate_attack_actions(team_dict)
     if attack_actions:
         for action in attack_actions:
@@ -113,6 +111,7 @@ def lol_main(board:Board, team:Team):
                     if num_enemy_tokens - len(ally_tokens) >= 2:
                         return action
 
+    (threat, threat_dist) = team.determine_closest_threat(team_dict)
     if threat:
         enemy_defeatables = team.generate_enemy_defeatable(team_dict)
         enemy_token = threat[0]
@@ -132,24 +131,21 @@ def lol_main(board:Board, team:Team):
             
             # Get as close to saviour as possible
             run_to_ally = run_to_ally_strategy(team, team_dict, ally_token, enemy_token, enemy_what_beats)
-            if run_to_ally:
-                # print("RUN TO ALLY")
-                return run_to_ally
+            if run_to_ally: return run_to_ally
 
             run_to_enemy = run_to_enemy_strategy(team, team_dict, ally_token, enemy_token, enemy_team)
-            if run_to_enemy:
-
-                return run_to_enemy
+            if run_to_enemy: return run_to_enemy
             
-            # If in our territory, throw on top 
-            if len(team.get_tokens_of_type(enemy_what_beats)) < 2 and team.throws_remaining>0:
-                throwzone = team.generate_throw_zone(team_dict, enemy_what_beats)   
-                if enemy_token.hex in throwzone:
-                    return Action(action_tuple=(Rules.THROW, enemy_what_beats, enemy_token.hex.to_tuple()))
-            
-            # else:
-                # if we don't have a saviour
-                # saviour_type = ally_token.beats_what()
+            if team.throws_remaining > enemy_team.throws_remaining:
+                # If in our territory, throw on top 
+                if len(team.get_tokens_of_type(enemy_what_beats)) < 2 and team.throws_remaining>0:
+                    throwzone = team.generate_throw_zone(team_dict, enemy_what_beats)   
+                    if enemy_token.hex in throwzone:
+                        return Action(action_tuple=(Rules.THROW, enemy_what_beats, enemy_token.hex.to_tuple()))
+                
+                # else:
+                    # if we don't have a saviour
+                    # saviour_type = ally_token.beats_what()
 
         elif threat_dist <= 3:
             path = astar_search(team_dict, enemy_team.team_name, enemy_token, ally_token)
@@ -302,23 +298,6 @@ def recursive_thingo(board: Board, team: Team, depth: int):
         # generate potential actions
         upper_actions = board.team_upper.generate_good_actions(board.team_dict)
         lower_actions = board.team_lower.generate_good_actions(board.team_dict)
-        # print("UPPER")
-        # [print(action, end=', ') for action in upper_actions]
-        # print()
-        # print("LOWER")
-        # [print(action, end=', ') for action in lower_actions]
-        # print()
-
-        # if len(upper_actions) > 5:
-        #     print("LOWER")
-        #     [print(action, end=', ') for action in upper_actions]
-        #     print()
-        # if len(lower_actions) > 5:
-        #     print("UPPER")
-        #     [print(action, end=', ') for action in lower_actions]
-        #     print()
-        # print(f'upp: {upper_actions}')
-        # print(f'low: {lower_actions}')
         
         # create matrix
         V = []
@@ -343,10 +322,8 @@ def recursive_thingo(board: Board, team: Team, depth: int):
         # Solve game for us 
         if team.team_name == UPPER: 
             (s,v) = solve_game(V)
-            # (s_opp, v_opp) = solve_game(V, maximiser=False, rowplayer=False)
         else:
             (s,v) = solve_game(V, maximiser=True, rowplayer=False)
-            # (s_opp, v_opp) = solve_game(V, maximiser=False, rowplayer=True)
 
         return (s, v, V)
 
