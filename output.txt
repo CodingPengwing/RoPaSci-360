@@ -1,0 +1,268 @@
+******************************************************************
+welcome to RoPaSci 360 referee version 2021.0.1.
+
+conduct a game of RoPaSci 360 between 2 Player classes.
+
+run `python -m referee --help` for additional usage information.
+******************************************************************
+* all messages printed by the referee after this begin with *
+* (any other lines of output must be from your Player class).
+* importing player 1's player class 'Player' from package 'greedy_player'
+* importing player 2's player class 'Player' from package 'cooked_pancakes'
+* NOTE: unable to measure memory usage on this platform (try dimefox)
+** initialising players
+* initialising upper player as a 'greedy_player.player.Player'
+*   time:  + 0.000s  (just elapsed)    0.000s  (game total)
+* initialising lower player as a 'cooked_pancakes.player.Player'
+*   time:  + 0.000s  (just elapsed)    0.000s  (game total)
+** game start!
+* displaying game info:
+*   
+*   throws:        .-'-._.-'-._.-'-._.-'-._.-'-.
+*    upper        |     |     |     |     |     |
+*      0        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*    lower     |     |     |     |     |     |     |
+*      0     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*           |     |     |     |     |     |     |     |
+*         .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*        |     |     |     |     |     |     |     |     |
+*      .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*     |     |     |     |     |     |     |     |     |     |
+*     '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*        |     |     |     |     |     |     |     |     |
+*        '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*           |     |     |     |     |     |     |     |
+*           '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*              |     |     |     |     |     |     |
+*              '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*                 |     |     |     |     |     |
+*                 '-._.-'-._.-'-._.-'-._.-'-._.-'
+** Turn 1
+* asking player 1 (upper) for next action...
+*   player 1 (upper) returned action: ('THROW', 's', (4, -2))
+*   time:  + 0.000s  (just elapsed)    0.000s  (game total)
+* asking player 2 (lower) for next action...
+*   player 2 (lower) returned action: ('THROW', 's', (-4, 2))
+*   time:  + 0.000s  (just elapsed)    0.000s  (game total)
+* displaying game info:
+*   
+*   throws:        .-'-._.-'-._.-'-._.-'-._.-'-.
+*    upper        |     |     | (S) |     |     |
+*      1        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*    lower     |     |     |     |     |     |     |
+*      1     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*           |     |     |     |     |     |     |     |
+*         .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*        |     |     |     |     |     |     |     |     |
+*      .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*     |     |     |     |     |     |     |     |     |     |
+*     '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*        |     |     |     |     |     |     |     |     |
+*        '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*           |     |     |     |     |     |     |     |
+*           '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*              |     |     |     |     |     |     |
+*              '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*                 |     |     | (s) |     |     |
+*                 '-._.-'-._.-'-._.-'-._.-'-._.-'
+* updating player 1 (upper) with actions...
+*   time:  + 0.000s  (just elapsed)    0.000s  (game total)
+* updating player 2 (lower) with actions...
+*   time:  + 0.000s  (just elapsed)    0.000s  (game total)
+** Turn 2
+* asking player 1 (upper) for next action...
+*   player 1 (upper) returned action: ('THROW', 'r', (3, -1))
+*   time:  + 0.000s  (just elapsed)    0.000s  (game total)
+* asking player 2 (lower) for next action...
+*   player 2 (lower) returned action: ('THROW', 'r', (-3, 0))
+*   time:  + 0.000s  (just elapsed)    0.000s  (game total)
+* displaying game info:
+*   
+*   throws:        .-'-._.-'-._.-'-._.-'-._.-'-.
+*    upper        |     |     | (S) |     |     |
+*      2        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*    lower     |     |     |     | (R) |     |     |
+*      2     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*           |     |     |     |     |     |     |     |
+*         .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*        |     |     |     |     |     |     |     |     |
+*      .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*     |     |     |     |     |     |     |     |     |     |
+*     '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*        |     |     |     |     |     |     |     |     |
+*        '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*           |     |     |     |     |     |     |     |
+*           '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*              |     | (r) |     |     |     |     |
+*              '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*                 |     |     | (s) |     |     |
+*                 '-._.-'-._.-'-._.-'-._.-'-._.-'
+* updating player 1 (upper) with actions...
+*   time:  + 0.000s  (just elapsed)    0.001s  (game total)
+* updating player 2 (lower) with actions...
+*   time:  + 0.000s  (just elapsed)    0.001s  (game total)
+** Turn 3
+* asking player 1 (upper) for next action...
+*   player 1 (upper) returned action: ('SLIDE', (3, -1), (2, -1))
+*   time:  + 0.006s  (just elapsed)    0.006s  (game total)
+* asking player 2 (lower) for next action...
+*   player 2 (lower) returned action: ('SLIDE', (-3, 0), (-2, -1))
+*   time:  + 0.934s  (just elapsed)    0.935s  (game total)
+* displaying game info:
+*   
+*   throws:        .-'-._.-'-._.-'-._.-'-._.-'-.
+*    upper        |     |     | (S) |     |     |
+*      2        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*    lower     |     |     |     |     |     |     |
+*      2     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*           |     |     |     | (R) |     |     |     |
+*         .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*        |     |     |     |     |     |     |     |     |
+*      .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*     |     |     |     |     |     |     |     |     |     |
+*     '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*        |     |     |     |     |     |     |     |     |
+*        '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*           |     | (r) |     |     |     |     |     |
+*           '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*              |     |     |     |     |     |     |
+*              '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*                 |     |     | (s) |     |     |
+*                 '-._.-'-._.-'-._.-'-._.-'-._.-'
+* updating player 1 (upper) with actions...
+*   time:  + 0.000s  (just elapsed)    0.006s  (game total)
+* updating player 2 (lower) with actions...
+*   time:  + 0.000s  (just elapsed)    0.935s  (game total)
+** Turn 4
+* asking player 1 (upper) for next action...
+*   player 1 (upper) returned action: ('SLIDE', (2, -1), (1, -1))
+*   time:  + 0.004s  (just elapsed)    0.010s  (game total)
+* asking player 2 (lower) for next action...
+*   player 2 (lower) returned action: ('SLIDE', (-2, -1), (-1, -1))
+*   time:  + 0.673s  (just elapsed)    1.607s  (game total)
+* displaying game info:
+*   
+*   throws:        .-'-._.-'-._.-'-._.-'-._.-'-.
+*    upper        |     |     | (S) |     |     |
+*      2        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*    lower     |     |     |     |     |     |     |
+*      2     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*           |     |     |     |     |     |     |     |
+*         .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*        |     |     |     | (R) |     |     |     |     |
+*      .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*     |     |     |     |     |     |     |     |     |     |
+*     '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*        |     |     | (r) |     |     |     |     |     |
+*        '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*           |     |     |     |     |     |     |     |
+*           '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*              |     |     |     |     |     |     |
+*              '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*                 |     |     | (s) |     |     |
+*                 '-._.-'-._.-'-._.-'-._.-'-._.-'
+* updating player 1 (upper) with actions...
+*   time:  + 0.000s  (just elapsed)    0.011s  (game total)
+* updating player 2 (lower) with actions...
+*   time:  + 0.000s  (just elapsed)    1.608s  (game total)
+** Turn 5
+* asking player 1 (upper) for next action...
+*   player 1 (upper) returned action: ('SLIDE', (1, -1), (0, -1))
+*   time:  + 0.003s  (just elapsed)    0.013s  (game total)
+* asking player 2 (lower) for next action...
+*   player 2 (lower) returned action: ('SLIDE', (-1, -1), (0, -2))
+*   time:  + 0.619s  (just elapsed)    2.227s  (game total)
+* displaying game info:
+*   
+*   throws:        .-'-._.-'-._.-'-._.-'-._.-'-.
+*    upper        |     |     | (S) |     |     |
+*      2        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*    lower     |     |     |     |     |     |     |
+*      2     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*           |     |     |     |     |     |     |     |
+*         .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*        |     |     |     |     |     |     |     |     |
+*      .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*     |     |     | (r) | (R) |     |     |     |     |     |
+*     '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*        |     |     |     |     |     |     |     |     |
+*        '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*           |     |     |     |     |     |     |     |
+*           '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*              |     |     |     |     |     |     |
+*              '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*                 |     |     | (s) |     |     |
+*                 '-._.-'-._.-'-._.-'-._.-'-._.-'
+* updating player 1 (upper) with actions...
+*   time:  + 0.000s  (just elapsed)    0.014s  (game total)
+* updating player 2 (lower) with actions...
+*   time:  + 0.000s  (just elapsed)    2.227s  (game total)
+** Turn 6
+* asking player 1 (upper) for next action...
+*   player 1 (upper) returned action: ('SLIDE', (0, -1), (-1, -1))
+*   time:  + 0.002s  (just elapsed)    0.015s  (game total)
+* asking player 2 (lower) for next action...
+*   player 2 (lower) returned action: ('SLIDE', (0, -2), (1, -2))
+*   time:  + 0.224s  (just elapsed)    2.451s  (game total)
+* displaying game info:
+*   
+*   throws:        .-'-._.-'-._.-'-._.-'-._.-'-.
+*    upper        |     |     | (S) |     |     |
+*      2        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*    lower     |     |     |     |     |     |     |
+*      2     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*           |     |     |     |     |     |     |     |
+*         .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*        |     |     | (r) |     |     |     |     |     |
+*      .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*     |     |     |     |     |     |     |     |     |     |
+*     '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*        |     |     | (R) |     |     |     |     |     |
+*        '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*           |     |     |     |     |     |     |     |
+*           '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*              |     |     |     |     |     |     |
+*              '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*                 |     |     | (s) |     |     |
+*                 '-._.-'-._.-'-._.-'-._.-'-._.-'
+* updating player 1 (upper) with actions...
+*   time:  + 0.000s  (just elapsed)    0.016s  (game total)
+* updating player 2 (lower) with actions...
+*   time:  + 0.000s  (just elapsed)    2.451s  (game total)
+** Turn 7
+* asking player 1 (upper) for next action...
+*   player 1 (upper) returned action: ('SLIDE', (-1, -1), (-2, 0))
+*   time:  + 0.001s  (just elapsed)    0.016s  (game total)
+* asking player 2 (lower) for next action...
+*   player 2 (lower) returned action: ('THROW', 'p', (-2, 0))
+*   time:  + 0.004s  (just elapsed)    2.455s  (game total)
+* displaying game info:
+*   
+*   throws:        .-'-._.-'-._.-'-._.-'-._.-'-.
+*    upper        |     |     | (S) |     |     |
+*      2        .-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*    lower     |     |     |     |     |     |     |
+*      3     .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*           |     |     |     |     |     |     |     |
+*         .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*        |     |     | (r) |     |     |     |     |     |
+*      .-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-.
+*     |     |     |     |     |     |     |     |     |     |
+*     '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*        |     |     |     |     |     |     |     |     |
+*        '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*           |     |     | (p) |     |     |     |     |
+*           '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*              |     |     |     |     |     |     |
+*              '-._.-'-._.-'-._.-'-._.-'-._.-'-._.-'
+*                 |     |     | (s) |     |     |
+*                 '-._.-'-._.-'-._.-'-._.-'-._.-'
+* updating player 1 (upper) with actions...
+*   time:  + 0.000s  (just elapsed)    0.017s  (game total)
+* updating player 2 (lower) with actions...
+*   time:  + 0.000s  (just elapsed)    2.455s  (game total)
+** Turn 8
+* asking player 1 (upper) for next action...
+*   player 1 (upper) returned action: ('SLIDE', (4, -2), (3, -2))
+*   time:  + 0.004s  (just elapsed)    0.020s  (game total)
+* asking player 2 (lower) for next action...

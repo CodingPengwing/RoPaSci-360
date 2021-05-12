@@ -2,6 +2,8 @@
 from cooked_pancakes.util import exit_with_error
 from cooked_pancakes.foundations import Token, Hex, Rules
 
+UPPER = Rules.UPPER
+LOWER = Rules.LOWER
 
 """
 This file was created while referencing the following website:
@@ -113,9 +115,6 @@ def find_attack_moves_for_token(team_dict: dict, team_name: str, start: Token, e
     if path:
         optimal_path_len = len(path)
     else:
-        # print("No path???")
-        # print(f'start: {start}')
-        # print(f'end: {end}')
         return None
 
     if len(path) == 2:
@@ -131,7 +130,19 @@ def find_attack_moves_for_token(team_dict: dict, team_name: str, start: Token, e
                 blacklist.append(path[1])
                 path = astar_search(team_dict, team_name, start, end, blacklist=blacklist)
             else: break
-    return moves
 
-"""INSTEAD OF FIND ATTACK MOVES JUST FIND MOVES IN GENERAL TOWARDS A HEX"""
+    enemy_team = team_dict[UPPER] if team_name == LOWER else team_dict[LOWER]
+    enemy_occupied = [t.hex for t in enemy_team.get_tokens_of_type(start.what_beats())]
+    safe_moves = []
+    if enemy_occupied and moves:
+        risky_hexes = []
+        for hex in enemy_occupied:
+            risky_hexes += [a.to_hex for a in enemy_team._move_actions(hex, team_dict)]
+        risky_hexes = set(risky_hexes)
+        for move in moves:
+            if move not in risky_hexes:
+                safe_moves.append(move)
+
+    return safe_moves if safe_moves else moves
+
 

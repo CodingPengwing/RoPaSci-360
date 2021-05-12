@@ -390,19 +390,7 @@ class Team:
     def generate_attack_actions(self, team_dict: dict):
         # Find closest killable enemy token
         defeatable_tokens = self.generate_enemy_defeatable(team_dict)
-        
-        min_dist = -1
-        closest_pairings = []
-        for ally in self.active_tokens:
-            defeatable = defeatable_tokens[ally.symbol]
-            closest_enemy = ally.find_closest_token(defeatable)
-            if closest_enemy:
-                dist = Hex.dist(closest_enemy.hex, ally.hex)
-                if min_dist == -1 or dist < min_dist:
-                    min_dist = dist
-                    closest_pairings = [(ally, closest_enemy)]
-                elif dist == min_dist:
-                    closest_pairings.append((ally,closest_enemy))
+        closest_pairings, min_dist = self.determine_closest_kills(team_dict)
         
         # Generate attack moves to that closest killable enemy token
         actions = []
@@ -415,22 +403,6 @@ class Team:
                         actions.append(new_action)
 
         return actions
-
-
-        # actions = []
-        # for ally in self.active_tokens:
-        #     # Attack actions
-        #     if defeatable_tokens[ally.symbol]:
-        #         for enemy in defeatable_tokens[ally.symbol]:
-        #             moves = find_attack_moves_for_token(team_dict, self.team_name, ally, enemy)
-        #             if moves:
-        #                 for move in moves:
-        #                     new_action = Action.create_action_from_path(ally.hex, move)
-        #                     actions.append(new_action) 
-        # print("Actacckkk:")
-        # for action in actions: print(action, end=', ')
-        # print('\n')
-        # return actions
 
     def generate_throw_actions(self, team_dict: dict):
         actions = []
@@ -567,8 +539,46 @@ class Team:
             if len(enemy_tokens) > max_enemies:
                 max_enemies = len(enemy_tokens)
                 best_pair = closest_pair
-        
+                
         return best_pair, min_dist
+
+    def determine_closest_kills(self, team_dict: dict):
+        for team_name in Rules.VALID_TEAMS:
+            if team_name not in team_dict:
+                exit_with_error("Error in Team.determine_closest_kill(): incorrect team_dict dictionary format.")
+            if not is_type(team_dict[team_name], Team):
+                exit_with_error("Error in Team.determine_closest_kill(): incorrect team_dict dictionary format.")
+
+        enemy_team = team_dict[UPPER] if self.team_name == LOWER else team_dict[LOWER]
+        min_dist = -1
+        closest_list = []
+        
+        for token in self.active_tokens:
+            enemy_tokens = enemy_team.get_tokens_of_type(token.beats_what())
+            # enemy_token = token.find_closest_token(enemy_tokens)
+            for enemy_token in enemy_tokens:
+                # dist = Hex.dist(token.hex, enemy_token.hex)
+                path = astar_search(team_dict, self.team_name, token, enemy_token)
+                if path:
+                    dist = len(path) - 1
+                    if min_dist == -1 or dist < min_dist:
+                        min_dist = dist
+                        closest_list = [(token, enemy_token)]
+                    if dist == min_dist:
+                        closest_list.append((token, enemy_token))
+
+        best_pairs = []
+        max_enemies = 0
+        for closest_pair in closest_list:
+            enemy_hex = closest_pair[1].hex
+            enemy_tokens = enemy_team.get_tokens_at(enemy_hex)
+            if len(enemy_tokens) > max_enemies:
+                max_enemies = len(enemy_tokens)
+                best_pairs = [closest_pair]
+            if len(enemy_tokens) == max_enemies:
+                best_pairs.append(closest_pair)
+        
+        return best_pairs, min_dist
 
     def determine_closest_threat(self, team_dict: dict):
         enemy_team = team_dict[UPPER] if self.team_name == LOWER else team_dict[LOWER]
