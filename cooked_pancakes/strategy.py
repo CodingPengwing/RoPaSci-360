@@ -87,7 +87,7 @@ def attack_strategy():
     return next_action
 
 
-def lol_main(board:Board, team:Team):
+def defense_mechanism(board:Board, team:Team):
     enemy_team = board.team_upper if team.team_name == LOWER else board.team_lower
     team_dict = board.team_dict
 
@@ -130,16 +130,13 @@ def lol_main(board:Board, team:Team):
             run_to_enemy = run_to_enemy_strategy(team, team_dict, ally_token, enemy_token, enemy_team)
             if run_to_enemy: return run_to_enemy
             
-            if team.throws_remaining > enemy_team.throws_remaining:
-                # If in our territory, throw on top 
-                if len(team.get_tokens_of_type(enemy_what_beats)) < 2 and team.throws_remaining>0:
-                    throwzone = team.generate_throw_zone(team_dict, enemy_what_beats)   
-                    if enemy_token.hex in throwzone:
-                        return Action(action_tuple=(Rules.THROW, enemy_what_beats, enemy_token.hex.to_tuple()))
+            # if team.throws_remaining > enemy_team.throws_remaining:
+            # If in our territory, throw on top 
+            if len(team.get_tokens_of_type(enemy_what_beats)) < 2 and team.throws_remaining>0:
+                throwzone = team.generate_throw_zone(team_dict, enemy_what_beats)   
+                if enemy_token.hex in throwzone:
+                    return Action(action_tuple=(Rules.THROW, enemy_what_beats, enemy_token.hex.to_tuple()))
                 
-                # else:
-                    # if we don't have a saviour
-                    # saviour_type = ally_token.beats_what()
 
         elif threat_dist <= 3:
             path = astar_search(team_dict, enemy_team.team_name, enemy_token, ally_token)
@@ -172,7 +169,7 @@ def lol_main(board:Board, team:Team):
 def game_theory(board:Board, team:Team):
     team_dict = board.team_dict
     depth = 0
-    (s, v, V) = recursive_thingo(board, team, depth)
+    (s, v, V) = mixed_strategy_nash_equilibrium(board, team, depth)
     our_actions = team.generate_good_actions(team_dict)
     chance = random.uniform(0,1)
     index = 0
@@ -193,7 +190,7 @@ def game_theory(board:Board, team:Team):
 '''
 NEED TO PRUNE!!!
 '''
-def recursive_thingo(board: Board, team: Team, depth: int):
+def mixed_strategy_nash_equilibrium(board: Board, team: Team, depth: int):
     enemy_team = board.team_upper if team.team_name == LOWER else board.team_lower
     
     if depth == CUTOFF:
@@ -219,7 +216,7 @@ def recursive_thingo(board: Board, team: Team, depth: int):
                 new_board.successor(actions)
 
                 # else:
-                (s, v, U) = recursive_thingo(new_board, team, depth)
+                (s, v, U) = mixed_strategy_nash_equilibrium(new_board, team, depth)
                 
                 V_i.append(v)
             

@@ -56,7 +56,7 @@ class Player:
                 next_action = self.board.get_team(self.team_name).second_move()
                 return next_action.to_tuple()
 
-        next_action = lol_main(self.board, team)
+        next_action = defense_mechanism(self.board, team)
         if next_action: return next_action.to_tuple()
         
         if (self.total_time > 45):
