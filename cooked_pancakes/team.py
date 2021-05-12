@@ -330,6 +330,7 @@ class Team:
                 max_dist = Hex.dist(hex, hex_avoid)
             elif Hex.dist(hex, hex_avoid) == max_dist:
                 good_moves.append(hex)
+        if good_moves: random.shuffle(good_moves)
         return good_moves
 
     def generate_run_actions(self, team_dict: dict):
@@ -539,7 +540,7 @@ class Team:
             if len(enemy_tokens) > max_enemies:
                 max_enemies = len(enemy_tokens)
                 best_pair = closest_pair
-                
+
         return best_pair, min_dist
 
     def determine_closest_kills(self, team_dict: dict):
