@@ -1,3 +1,9 @@
+"""
+We utilised elements of the sample solution of Project Part A in creating some features of our code. 
+These elements are small parts of code that are mostly adapted to our own implementation.
+"""
+
+
 import random
 import time
 import numpy as np

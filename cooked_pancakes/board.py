@@ -111,25 +111,6 @@ class Board:
         return score
 
 
-    # def evaluate(self, team: Team):
-    #     score = 0
-    #     opp_team = self.team_upper if (team.team_name == LOWER) else self.team_lower
-        
-    #     closest_kill, kill_dist = team.determine_closest_kill(self.team_dict)
-    #     closest_threat, threat_dist = team.determine_closest_threat(self.team_dict)
-
-    #     if kill_dist > 0:
-    #         score -= kill_dist
-    #     if threat_dist > 0:
-    #         score += (1/2) * threat_dist
-
-    #     score += team.throws_remaining * 1
-    #     score += (Rules.MAX_THROWS - opp_team.throws_remaining) - len(opp_team.active_tokens)
-    #     score -= ((Rules.MAX_THROWS - team.throws_remaining) - len(team.active_tokens))
-        
-    #     return score
-
-
     def evaluate(self, team: Team):
         score = 0
         enemy_team = self.team_upper if (team.team_name == LOWER) else self.team_lower
