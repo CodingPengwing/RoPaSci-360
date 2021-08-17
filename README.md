@@ -1,4 +1,4 @@
-* RoPaSci 360 *
+# RoPaSci 360 #
 
 This is a custom game of Rock Paper Scissors with a twist! The game is played on a hexagonal board with dimensions of 6 x 6.
 The rules are:
