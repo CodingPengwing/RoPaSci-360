@@ -8,11 +8,11 @@ The rules are:
 - The goal is to kill all the pieces belonging to the opponent.
 More specific rules can be found in the specifications file in the repo.
 
-To run, navigate to the correct directory, then use command in terminal:
-python -m referee <player_1> <player_2>
+To run, navigate to the correct directory, then use command in terminal:  
+python -m referee <player_1> <player_2>  
 (where players can be one of: random_player, greedy_player, cooked_pancakes)
 
-Here are some examples:
-python -m referee greedy_player cooked_pancakes
-python -m referee random_player cooked_pancakes
-python -m referee cooked_pancakes cooked_pancakes
+Here are some examples:  
+python -m referee greedy_player cooked_pancakes  
+python -m referee random_player cooked_pancakes  
+python -m referee cooked_pancakes cooked_pancakes  
